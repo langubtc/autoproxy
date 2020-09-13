@@ -1,4 +1,7 @@
 
+call :build_all darwin 386
+call :build_all darwin amd64
+
 call :build_all linux 386
 call :build_all linux amd64
 
