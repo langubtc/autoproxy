@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/lixiangyun/autoproxy/util"
 	"io"
 	"net/http"
 	"strings"
@@ -139,7 +138,7 @@ func (proxy *HttpProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}else if proxy.mode == "proxy" {
 		rsp, err = proxy.proxyRoundTrip(r)
 	}else {
-		host := util.Address(r.URL)
+		host := Address(r.URL)
 		if IsSecondProxy(host) {
 			rsp, err = proxy.local.RoundTrip(r)
 		}else {

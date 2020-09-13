@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/lixiangyun/autoproxy/util"
 	"io/ioutil"
 	"log"
 	"os"
@@ -76,7 +75,7 @@ func IsSecondProxy(address string) bool {
 		return black
 	}
 
-	black = util.Connect(address, 3)
+	black = Connect(address, 3)
 	blockLock.Lock()
 	blockAddressList[address] = black
 	blockLock.Unlock()

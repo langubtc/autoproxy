@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/tls"
 	"fmt"
-	"github.com/lixiangyun/autoproxy/util"
 	"net"
 	"net/http"
 	"strings"
@@ -48,7 +47,7 @@ func HttpConnectsDel() {
 }
 
 func HttpsProxyOneHandler(r *http.Request, proxy *proxyServer) (net.Conn,error) {
-	host := util.Address(r.URL)
+	host := Address(r.URL)
 
 	Infof("connect to %s use remote proxy %s", host, proxy.address)
 
@@ -121,13 +120,13 @@ func (proxy *HttpProxyServer)HttpsHandler(w http.ResponseWriter, r *http.Request
 
 	tmout := time.Second * time.Duration(proxy.timeout)
 
-	host := util.Address(r.URL)
+	host := Address(r.URL)
 	if proxy.mode == "local" {
 		server, err = net.DialTimeout("tcp", host, tmout )
 	}else if proxy.mode == "proxy" {
 		server, err = proxy.HttpsProxyHandler(r)
 	}else {
-		host := util.Address(r.URL)
+		host := Address(r.URL)
 		if IsSecondProxy(host) {
 			server, err = proxy.HttpsProxyHandler(r)
 		}else {
