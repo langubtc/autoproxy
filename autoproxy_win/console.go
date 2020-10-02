@@ -4,25 +4,6 @@ import (
 	. "github.com/lxn/walk/declarative"
 )
 
-type Options struct {
-	Name   string
-	Detail string
-}
-
-func ModeOptions() []*Options {
-	return []*Options{
-		{"auto","自动转发"},
-		{"local","本地模式"},
-		{"proxy","全局转发"},
-	}
-}
-
-func RemoteOptions() []*Options {
-	return []*Options{
-		{"easymesh.cc:8080","easymesh.cc"},
-	}
-}
-
 func ConsoleWidget() []Widget {
 	return []Widget{
 		Label{
