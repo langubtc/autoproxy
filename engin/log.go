@@ -19,12 +19,12 @@ type LogFile struct {
 	maxnum  int    /* 文件数量上限 */
 	file    *os.File /* 当前正在写入的文件句柄 */
 	cursize int64    /* 当前文件大小 */
-	
+	debug   bool
 	cache chan []byte
 }
 
-func NewLogFile(dir string, size int, num int) (*LogFile, error) {
-	logfile := &LogFile{dir: dir, maxsize: int64(size), maxnum: num}
+func NewLogFile(dir string, size int, num int, debug bool) (*LogFile, error) {
+	logfile := &LogFile{dir: dir, maxsize: int64(size), maxnum: num, debug: debug}
 	fileinfo, err := os.Stat(dir)
 	if err != nil {
 		return nil, err
@@ -166,7 +166,9 @@ func (lf *LogFile) WriteToFile(p []byte) {
 				}
 				cleanfile(lf.dir, lf.maxnum)
 			} else {
-				os.Stderr.Write(p)
+				if lf.debug {
+					os.Stderr.Write(p)
+				}
 				cnt, _ := lf.file.Write(p)
 				if cnt > 0 {
 					lf.cursize += int64(cnt)
@@ -201,8 +203,8 @@ func loglevel(level LOG_LEVEL) string {
 
 var gFileLog *LogFile
 
-func LogInit(cfg LogConfig) error {
-	file, err := NewLogFile(cfg.Path, cfg.FileSize, cfg.FileNum)
+func LogInit(cfg LogConfig, debug bool) error {
+	file, err := NewLogFile(cfg.Path, cfg.FileSize, cfg.FileNum, debug)
 	if err != nil {
 		log.Println(err.Error())
 		return err

@@ -50,7 +50,7 @@ func proxyAuthInfo(r *http.Request, auth []AuthConfig) bool {
 }
 
 func NoProxyHandler(w http.ResponseWriter, r *http.Request) {
-	time.Sleep(time.Second) // 防DOS攻击延时
+	time.Sleep(5 * time.Second) // 防DOS攻击延时
 	Warnf("Request is illegal. RemoteAddr: %s",r.RemoteAddr)
 	http.Error(w,
 		"This is a proxy server. Does not respond to non-proxy requests.",
@@ -58,7 +58,7 @@ func NoProxyHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AuthFailHandler(w http.ResponseWriter, r *http.Request) {
-	time.Sleep(30*time.Second) // 防DOS攻击延时
+	time.Sleep(30 * time.Second) // 防DOS攻击延时
 	Warnf("Request authentication failed. RemoteAddr: %s",r.RemoteAddr)
 	http.Error(w,
 		"Request authentication failed.",

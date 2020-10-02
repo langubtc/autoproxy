@@ -31,7 +31,7 @@ func main()  {
 		log.Fatalf(err.Error())
 	}
 
-	err = LogInit(config.Log)
+	err = LogInit(config.Log, Debug)
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
