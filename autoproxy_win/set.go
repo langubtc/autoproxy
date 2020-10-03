@@ -6,11 +6,39 @@ import (
 	. "github.com/lxn/walk/declarative"
 )
 
+func AutoRunningGet() bool {
+	if DataIntValueGet("autorunning") > 0 {
+		return true
+	}
+	return false
+}
+
+func AutoRunningSet(flag bool)  {
+	if flag {
+		DataIntValueSet("autorunning", 1)
+	} else {
+		DataIntValueSet("autorunning", 0)
+	}
+}
 
 func SettingWidget() []Widget {
 	var lang *walk.ComboBox
+	var auto *walk.RadioButton
 
 	return []Widget{
+		Label{
+			Text: LangValue("whetherauto") + ":",
+		},
+		RadioButton{
+			AssignTo: &auto,
+			OnBoundsChanged: func() {
+				auto.SetChecked(AutoRunningGet())
+			},
+			OnClicked: func() {
+				auto.SetChecked(!AutoRunningGet())
+				AutoRunningSet(!AutoRunningGet())
+			},
+		},
 		Label{
 			Text: LangValue("langname") + ":",
 		},
@@ -22,6 +50,7 @@ func SettingWidget() []Widget {
 				LangOptionSet(lang.CurrentIndex())
 			},
 		},
+
 	}
 }
 

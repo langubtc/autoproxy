@@ -133,17 +133,38 @@ func LocalIfaceOptionsSet(ifaceName string)  {
 	}
 }
 
+func AuthSwitchGet() bool {
+	if DataIntValueGet("authswtich") > 0 {
+		return true
+	}
+	return false
+}
+
+func AuthSwitchSet(flag bool)  {
+	if flag {
+		DataIntValueSet("authswtich", 1)
+	} else {
+		DataIntValueSet("authswtich", 0)
+	}
+}
+
 func localWidget() []Widget {
-	var protocal, mode, tls *walk.ComboBox
+	var iface, protocal, mode, tls *walk.ComboBox
 	var port *walk.NumberEdit
+	var auth *walk.RadioButton
 
 	return []Widget{
 		Label{
 			Text: LangValue("localaddress") + ":",
 		},
 		ComboBox{
-			CurrentIndex:  0,
+			AssignTo: &iface,
+			CurrentIndex:  LocalIfaceOptionsIdx(),
+			RightToLeftReading: false,
 			Model:         IfaceOptions(),
+			OnCurrentIndexChanged: func() {
+				LocalIfaceOptionsSet(iface.Text())
+			},
 		},
 		Label{
 			Text: LangValue("port") + ":",
@@ -197,18 +218,13 @@ func localWidget() []Widget {
 			Text: LangValue("whetherauth") + ":",
 		},
 		RadioButton{
+			AssignTo: &auth,
 			OnBoundsChanged: func() {
+				auth.SetChecked(AuthSwitchGet())
 			},
 			OnClicked: func() {
-			},
-		},
-		Label{
-			Text: LangValue("whetherauto") + ":",
-		},
-		RadioButton{
-			OnBoundsChanged: func() {
-			},
-			OnClicked: func() {
+				auth.SetChecked(!AuthSwitchGet())
+				AuthSwitchSet(!AuthSwitchGet())
 			},
 		},
 		Label{

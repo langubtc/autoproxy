@@ -2,22 +2,32 @@ package main
 
 import (
 	"golang.org/x/sys/windows/registry"
+	"syscall"
 )
 
 const DATA_KEY = "SOFTWARE\\Autoproxy"
 
+var keyhandle registry.Key
+
+func init()  {
+	keyhandle = registry.Key(syscall.InvalidHandle)
+}
+
 func keyGet() (registry.Key, error) {
-	key, err := registry.OpenKey(registry.CURRENT_USER, DATA_KEY, registry.ALL_ACCESS)
-	if err != nil {
-		if err != registry.ErrNotExist {
-			return 0, err
-		}
-		key, _, err = registry.CreateKey(registry.CURRENT_USER, DATA_KEY, registry.ALL_ACCESS)
+	if syscall.Handle(keyhandle) == syscall.InvalidHandle {
+		key, err := registry.OpenKey(registry.CURRENT_USER, DATA_KEY, registry.ALL_ACCESS)
 		if err != nil {
-			return 0, err
+			if err != registry.ErrNotExist {
+				return 0, err
+			}
+			key, _, err = registry.CreateKey(registry.CURRENT_USER, DATA_KEY, registry.ALL_ACCESS)
+			if err != nil {
+				return 0, err
+			}
 		}
+		keyhandle = key
 	}
-	return key, nil
+	return keyhandle, nil
 }
 
 func DataStringValueGet(name string) string {
