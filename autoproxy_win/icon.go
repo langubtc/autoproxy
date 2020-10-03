@@ -1,15 +1,15 @@
 package main
 
 import (
+	"github.com/astaxie/beego/logs"
 	"github.com/lxn/walk"
 	"os"
-	"log"
 )
 
 func IconLoadFromBox(filename string) *walk.Icon {
 	body, err := BoxFile().Bytes(filename)
 	if err != nil {
-		log.Fatalln(err.Error())
+		logs.Error(err.Error())
 		return nil
 	}
 	dir := DEFAULT_HOME + "\\icon\\"
@@ -17,21 +17,21 @@ func IconLoadFromBox(filename string) *walk.Icon {
 	if err != nil {
 		err = os.MkdirAll(dir, 644)
 		if err != nil {
-			log.Fatalln(err.Error())
+			logs.Error(err.Error())
 			return nil
 		}
 	}
 	filepath := dir + filename
 	err = SaveToFile(filepath, body)
 	if err != nil {
-		log.Fatalln(err.Error())
+		logs.Error(err.Error())
 		return nil
 	}
 	icon, err := walk.NewIconFromFileWithSize(filepath, walk.Size{
 		Width: 128, Height: 128,
 	})
 	if err != nil {
-		log.Fatalln(err.Error())
+		logs.Error(err.Error())
 		return nil
 	}
 	return icon

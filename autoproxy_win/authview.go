@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/astaxie/beego/logs"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
-	"log"
 	"sort"
 )
 
@@ -109,16 +109,16 @@ func AuthDelete(from walk.Form) error {
 		}
 	}
 	if len(tempList) == 0 {
-		ErrorBoxAction(from, "未选中用户")
+		ErrorBoxAction(from, LangValue("nochoice"))
 		return fmt.Errorf("no user select")
 	}
-	ConfirmBoxAction(from, fmt.Sprintf("确认是否删除%v用户", tempList))
+	ConfirmBoxAction(from, fmt.Sprintf(LangValue("confirmdelete")+ "%v", tempList))
 
 	for _, v := range tempList {
 		authDelete(v)
 	}
 
-	InfoBoxAction(from, "删除成功")
+	InfoBoxAction(from, LangValue("deletesuccess"))
 	return nil
 }
 
@@ -130,7 +130,7 @@ func AuthView()  {
 
 	_, err := Dialog{
 		AssignTo: &dlg,
-		Title: "查看凭证",
+		Title: LangValue("viewcred"),
 		Icon: walk.IconShield(),
 		DefaultButton: &acceptPB,
 		CancelButton: &cancelPB,
@@ -144,8 +144,8 @@ func AuthView()  {
 				CheckBoxes: true,
 				Columns: []TableViewColumn{
 					{Title: "#", Width: 40},
-					{Title: "User", Width: 80},
-					{Title: "Passwd", Width: 150},
+					{Title: LangValue("user"), Width: 80},
+					{Title: LangValue("password"), Width: 150},
 				},
 				StyleCell: func(style *walk.CellStyle) {
 					if style.Row()%2 == 0 {
@@ -161,11 +161,11 @@ func AuthView()  {
 				Children: []Widget{
 					PushButton{
 						AssignTo: &acceptPB,
-						Text:     "删除",
+						Text:     LangValue("delete"),
 						OnClicked: func() {
 							err := AuthDelete(dlg)
 							if err != nil {
-								log.Println(err.Error())
+								logs.Error(err.Error())
 							} else {
 								UserListUpdate()
 							}
@@ -173,7 +173,7 @@ func AuthView()  {
 					},
 					PushButton{
 						AssignTo:  &cancelPB,
-						Text:      "取消",
+						Text:      LangValue("cancel"),
 						OnClicked: func() {
 							dlg.Cancel()
 						},
@@ -185,7 +185,7 @@ func AuthView()  {
 	}.Run(mainWindow)
 
 	if err != nil {
-		log.Println(err.Error())
+		logs.Error(err.Error())
 	}
 }
 

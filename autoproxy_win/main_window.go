@@ -64,12 +64,13 @@ func mainWindows() {
 		},
 	}.Run()
 
-
+	CloseWindows()
 }
 
 func CloseWindows()  {
 	if mainWindow != nil {
 		mainWindow.Close()
+		mainWindow = nil
 	}
 	NotifyExit()
 }

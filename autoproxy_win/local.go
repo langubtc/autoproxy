@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/astaxie/beego/logs"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
-	"log"
 	"net"
 )
 
@@ -15,9 +15,9 @@ type Options struct {
 
 func ModeOptions() []*Options {
 	return []*Options{
-		{"auto","自动转发"},
-		{"local","本地模式"},
-		{"proxy","全局转发"},
+		{"auto",LangValue("autoforward")},
+		{"local",LangValue("localforward")},
+		{"proxy", LangValue("globalforward")},
 	}
 }
 
@@ -28,7 +28,7 @@ func ModeOptionsIdx() int {
 func ModeOptionsSet(idx int)  {
 	err := DataIntValueSet("LocalMode", uint32(idx))
 	if err != nil {
-		log.Println(err.Error())
+		logs.Error(err.Error())
 	}
 }
 
@@ -45,7 +45,7 @@ func ProtocalOptionsIdx() int {
 func ProtcalOptionsSet(idx int)  {
 	err := DataIntValueSet("LocalProtocal", uint32(idx))
 	if err != nil {
-		log.Println(err.Error())
+		logs.Error(err.Error())
 	}
 }
 
@@ -62,7 +62,7 @@ func TlsOptionsIdx() int {
 func TlsOptionsSet(idx int)  {
 	err := DataIntValueSet("LocalTls", uint32(idx))
 	if err != nil {
-		log.Println(err.Error())
+		logs.Error(err.Error())
 	}
 }
 
@@ -77,7 +77,7 @@ func PortOptionGet() float64 {
 func PortOptionSet(value int)  {
 	err := DataIntValueSet("LocalPort", uint32(value))
 	if err != nil {
-		log.Println(err.Error())
+		logs.Error(err.Error())
 	}
 }
 
@@ -86,7 +86,6 @@ func RemoteOptions() []*Options {
 		{"easymesh.cc:8080","easymesh.cc"},
 	}
 }
-
 
 var ifaceList []string
 
@@ -117,24 +116,42 @@ func IfaceOptions() []string {
 	return output
 }
 
+func LocalIfaceOptionsIdx() int {
+	ifaceName := DataStringValueGet("LocalIface")
+	for idx, v := range ifaceList {
+		if v == ifaceName {
+			return idx
+		}
+	}
+	return 0
+}
+
+func LocalIfaceOptionsSet(ifaceName string)  {
+	err := DataStringValueSet("LocalIface", ifaceName)
+	if err != nil {
+		logs.Error(err.Error())
+	}
+}
+
 func localWidget() []Widget {
 	var protocal, mode, tls *walk.ComboBox
 	var port *walk.NumberEdit
 
 	return []Widget{
 		Label{
-			Text: "本地地址:",
+			Text: LangValue("localaddress") + ":",
 		},
 		ComboBox{
 			CurrentIndex:  0,
 			Model:         IfaceOptions(),
 		},
 		Label{
-			Text: "端口:",
+			Text: LangValue("port") + ":",
 		},
 		NumberEdit{
 			AssignTo: &port,
 			Value:    PortOptionGet(),
+			ToolTipText: "1~65535",
 			MaxValue: 65535,
 			MinValue: 1,
 			OnValueChanged: func() {
@@ -142,7 +159,7 @@ func localWidget() []Widget {
 			},
 		},
 		Label{
-			Text: "代理模式:",
+			Text: LangValue("mode") + ":",
 		},
 		ComboBox{
 			AssignTo: &mode,
@@ -155,7 +172,7 @@ func localWidget() []Widget {
 			},
 		},
 		Label{
-			Text: "接入协议:",
+			Text: LangValue("protocal") + ":",
 		},
 		ComboBox{
 			AssignTo: &protocal,
@@ -166,7 +183,7 @@ func localWidget() []Widget {
 			},
 		},
 		Label{
-			Text: "安全协议:",
+			Text: LangValue("tlsversion") + ":",
 		},
 		ComboBox{
 			AssignTo: &tls,
@@ -177,7 +194,7 @@ func localWidget() []Widget {
 			},
 		},
 		Label{
-			Text: "是否认证:",
+			Text: LangValue("whetherauth") + ":",
 		},
 		RadioButton{
 			OnBoundsChanged: func() {
@@ -186,7 +203,7 @@ func localWidget() []Widget {
 			},
 		},
 		Label{
-			Text: "自动启动:",
+			Text: LangValue("whetherauto") + ":",
 		},
 		RadioButton{
 			OnBoundsChanged: func() {
@@ -195,7 +212,7 @@ func localWidget() []Widget {
 			},
 		},
 		Label{
-			Text: "二级代理:",
+			Text: LangValue("remoteproxy") + ":",
 		},
 		ComboBox{
 			BindingMember: "Name",
@@ -213,7 +230,7 @@ func LocalServer()  {
 
 	_, err := Dialog{
 		AssignTo: &dlg,
-		Title: "本地代理",
+		Title: LangValue("localproxy"),
 		Icon: walk.IconShield(),
 		DefaultButton: &acceptPB,
 		CancelButton: &cancelPB,
@@ -230,14 +247,14 @@ func LocalServer()  {
 				Children: []Widget{
 					PushButton{
 						AssignTo: &acceptPB,
-						Text:     "确认",
+						Text:     LangValue("accpet"),
 						OnClicked: func() {
 
 						},
 					},
 					PushButton{
 						AssignTo:  &cancelPB,
-						Text:      "取消",
+						Text:      LangValue("cancel"),
 						OnClicked: func() {
 							dlg.Cancel()
 						},
@@ -248,6 +265,6 @@ func LocalServer()  {
 	}.Run(mainWindow)
 
 	if err != nil {
-		log.Println(err.Error())
+		logs.Error(err.Error())
 	}
 }

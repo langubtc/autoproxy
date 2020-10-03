@@ -13,16 +13,16 @@ var defaultFont = Font{
 func StatWidget() []Widget {
 	return []Widget{
 		Label{
-			Text: "运行状态",
+			Text: LangValue("runningstatus"),
 			Font: defaultFont,
 		},
 		Label{
-			Text: "正常",
+			Text: LangValue("normal"),
 			Font: defaultFont,
 			TextColor: walk.RGB(250,100,100),
 		},
 		Label{
-			Text: "请求次数",
+			Text: LangValue("requestcount"),
 			Font: defaultFont,
 		},
 		Label {
@@ -30,7 +30,7 @@ func StatWidget() []Widget {
 			Font: defaultFont,
 		},
 		Label{
-			Text: "实时流量",
+			Text: LangValue("realtimeflow"),
 			Font: defaultFont,
 		},
 		Label {
@@ -38,7 +38,7 @@ func StatWidget() []Widget {
 			Font: defaultFont,
 		},
 		Label{
-			Text: "总体流量",
+			Text: LangValue("totalflow"),
 			Font: defaultFont,
 		},
 		Label {

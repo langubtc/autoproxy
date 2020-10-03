@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/astaxie/beego/logs"
 	"github.com/lxn/walk"
-	"log"
 	"time"
 )
 
@@ -21,6 +21,7 @@ func NotifyExit()  {
 		return
 	}
 	notify.Dispose()
+	notify = nil
 }
 
 var lastCheck time.Time
@@ -30,14 +31,14 @@ func NotifyInit()  {
 
 	notify, err = walk.NewNotifyIcon(mainWindow)
 	if err != nil {
-		log.Printf("new notify icon fail, %s", err.Error())
+		logs.Error("new notify icon fail, %s", err.Error())
 		return
 	}
 
 	exitBut := walk.NewAction()
-	err = exitBut.SetText("&Exit")
+	err = exitBut.SetText(LangValue("exit"))
 	if err != nil {
-		log.Printf("notify new action fail, %s", err.Error())
+		logs.Error("notify new action fail, %s", err.Error())
 		return
 	}
 
@@ -46,7 +47,7 @@ func NotifyInit()  {
 	})
 
 	if err := notify.ContextMenu().Actions().Add(exitBut); err != nil {
-		log.Printf("notify add action fail, %s", err.Error())
+		logs.Error("notify add action fail, %s", err.Error())
 		return
 	}
 

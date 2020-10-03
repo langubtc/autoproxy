@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/astaxie/beego/logs"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
-	"log"
 	"os/exec"
 )
 
@@ -12,7 +12,7 @@ func OpenBrowserWeb(url string)  {
 	cmd := exec.Command("rundll32","url.dll,FileProtocolHandler", url)
 	err := cmd.Run()
 	if err != nil {
-		log.Printf("run cmd fail, %s", err.Error())
+		logs.Error("run cmd fail, %s", err.Error())
 	}
 }
 
@@ -26,14 +26,14 @@ func AboutAction() {
 	if aboutsCtx == "" {
 		aboutsCtx, err = BoxFile().String("about.txt")
 		if err != nil {
-			log.Println(err.Error())
+			logs.Error(err.Error())
 			return
 		}
 	}
 
 	_, err = Dialog{
 		AssignTo:      &about,
-		Title:         "关于",
+		Title:         LangValue("about"),
 		Icon:          walk.IconInformation(),
 		DefaultButton: &ok,
 		Layout:  VBox{},
@@ -49,13 +49,13 @@ func AboutAction() {
 				Layout: VBox{},
 				Children: []Widget{
 					PushButton{
-						Text:      "官方网站",
+						Text:      LangValue("officialweb"),
 						OnClicked: func() {
 							OpenBrowserWeb("https://easymesh.info")
 						},
 					},
 					PushButton{
-						Text:      "确认",
+						Text:      LangValue("accpet"),
 						OnClicked: func() { about.Cancel() },
 					},
 				},
@@ -64,6 +64,6 @@ func AboutAction() {
 	}.Run(mainWindow)
 
 	if err != nil {
-		log.Println(err.Error())
+		logs.Error(err.Error())
 	}
 }

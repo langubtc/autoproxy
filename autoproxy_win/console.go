@@ -7,13 +7,13 @@ import (
 func ConsoleWidget() []Widget {
 	return []Widget{
 		Label{
-			Text: "本地地址:",
+			Text: LangValue("localaddress") + ":",
 		},
 		Label {
 			Text: "http://192.168.3.11:8080",
 		},
 		Label{
-			Text: "是否认证:",
+			Text: LangValue("whetherauth") + ":",
 		},
 		RadioButton{
 			OnBoundsChanged: func() {
@@ -22,7 +22,7 @@ func ConsoleWidget() []Widget {
 			},
 		},
 		Label{
-			Text: "代理模式:",
+			Text: LangValue("mode") + ":",
 		},
 		ComboBox{
 			BindingMember: "Name",
@@ -31,7 +31,7 @@ func ConsoleWidget() []Widget {
 			Model:         ModeOptions(),
 		},
 		Label{
-			Text: "二级代理:",
+			Text: LangValue("remoteproxy") + ":",
 		},
 		ComboBox{
 			BindingMember: "Name",
@@ -45,14 +45,14 @@ func ConsoleWidget() []Widget {
 func ButtonWight() []Widget {
 	return []Widget{
 		PushButton{
-			Text:     "启动服务",
+			Text:     LangValue("start"),
 			OnClicked: func() {
 
 			},
 		},
 		PushButton{
 			//Enabled: false,
-			Text:     "停止服务",
+			Text:     LangValue("stop"),
 			OnClicked: func() {
 
 			},

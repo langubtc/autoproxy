@@ -3,10 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/astaxie/beego/logs"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
 	"io/ioutil"
-	"log"
 	"sync"
 )
 
@@ -30,7 +30,7 @@ func AuthInit() error {
 
 	body, err := ioutil.ReadFile(DEFAULT_HOME + "\\auth.json")
 	if err != nil {
-		log.Println("no auth json fail")
+		logs.Error("no auth json fail")
 		return nil
 	}
 	err = json.Unmarshal(body, &authCtrl.Items)
@@ -48,7 +48,7 @@ func AuthInit() error {
 func authSync() error {
 	body, err := json.Marshal(authCtrl.Items)
 	if err != nil {
-		log.Println(err.Error())
+		logs.Error(err.Error())
 		return err
 	}
 	return SaveToFile(DEFAULT_HOME + "\\auth.json", body)
@@ -60,7 +60,7 @@ func authAdd(user string, passwd string) error {
 
 	_, flag := authCtrl.cache[user]
 	if flag == true {
-		return fmt.Errorf("用户已经存在")
+		return fmt.Errorf(LangValue("userexist"))
 	}
 
 	authCtrl.cache[user] = &AuthInfo{
@@ -80,7 +80,7 @@ func authDelete(user string) error {
 
 	_, flag := authCtrl.cache[user]
 	if flag == false {
-		return fmt.Errorf("用户不存在")
+		return fmt.Errorf(LangValue("usernotexist"))
 	}
 	delete(authCtrl.cache, user)
 
@@ -115,7 +115,7 @@ func AuthAdd()  {
 
 	_, err := Dialog{
 		AssignTo: &dlg,
-		Title: "添加凭证",
+		Title:  LangValue("addcred"),
 		Icon: walk.IconShield(),
 		DefaultButton: &acceptPB,
 		CancelButton: &cancelPB,
@@ -127,27 +127,27 @@ func AuthAdd()  {
 				Layout: Grid{Columns: 3},
 				Children: []Widget{
 					Label{
-						Text: "用户名:",
+						Text: LangValue("user") + ":",
 					},
 					LineEdit{
 						AssignTo: &user,
 						Text: "",
 					},
 					PushButton{
-						Text:      "随机生成",
+						Text:      LangValue("randomgen"),
 						OnClicked: func() {
 							user.SetText("U"+GetUser(5))
 						},
 					},
 					Label{
-						Text: "密码:",
+						Text: LangValue("password") + ":",
 					},
 					LineEdit{
 						AssignTo: &passwd,
 						Text: "",
 					},
 					PushButton{
-						Text:      "随机生成",
+						Text:      LangValue("randomgen"),
 						OnClicked: func() {
 							passwd.SetText(GetToken(16))
 						},
@@ -159,10 +159,10 @@ func AuthAdd()  {
 				Children: []Widget{
 					PushButton{
 						AssignTo: &acceptPB,
-						Text:     "添加",
+						Text:     LangValue("add"),
 						OnClicked: func() {
 							if user.Text() == "" || passwd.Text() == "" {
-								ErrorBoxAction(dlg, "请输入用户名和密码")
+								ErrorBoxAction(dlg, LangValue("inputuserandpasswd"))
 								return
 							}
 							err := authAdd(user.Text(), passwd.Text())
@@ -170,13 +170,13 @@ func AuthAdd()  {
 								ErrorBoxAction(dlg, err.Error())
 								return
 							}
-							InfoBoxAction(dlg, "添加成功")
+							InfoBoxAction(dlg, LangValue("addsuccess"))
 							dlg.Cancel()
 						},
 					},
 					PushButton{
 						AssignTo:  &cancelPB,
-						Text:      "取消",
+						Text:      LangValue("cancel"),
 						OnClicked: func() {
 							dlg.Cancel()
 						},
@@ -188,7 +188,7 @@ func AuthAdd()  {
 	}.Run(mainWindow)
 
 	if err != nil {
-		log.Println(err.Error())
+		logs.Error(err.Error())
 	}
 }
 

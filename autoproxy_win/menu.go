@@ -7,20 +7,32 @@ import (
 func MenuBarInit() []MenuItem {
 	return []MenuItem{
 		Menu{
-			Text: "配置",
+			Text: LangValue("setting"),
 			Items: []MenuItem{
 				Action{
-					Text:     "本地服务",
+					Text:     LangValue("localproxy"),
 					OnTriggered: func() {
 						LocalServer()
 					},
 				},
 				Action{
-					Text:     "二级代理",
+					Text: LangValue("remoteproxy"),
+				},
+				Action{
+					Text: LangValue("basesetting"),
+					OnTriggered: func() {
+						BaseSetting()
+					},
+				},
+				Action{
+					Text: LangValue("runlog"),
+					OnTriggered: func() {
+						OpenBrowserWeb(logDirGet())
+					},
 				},
 				Separator{},
 				Action{
-					Text:        "退出",
+					Text: LangValue("exit"),
 					OnTriggered: func() {
 						CloseWindows()
 					},
@@ -28,16 +40,16 @@ func MenuBarInit() []MenuItem {
 			},
 		},
 		Menu{
-			Text: "认证凭证",
+			Text: LangValue("authcred"),
 			Items: []MenuItem{
 				Action{
-					Text:     "查看凭证",
+					Text:     LangValue("viewcred"),
 					OnTriggered: func() {
 						AuthView()
 					},
 				},
 				Action{
-					Text:     "添加凭证",
+					Text:     LangValue("addcred"),
 					OnTriggered: func() {
 						AuthAdd()
 					},
@@ -45,13 +57,13 @@ func MenuBarInit() []MenuItem {
 			},
 		},
 		Action{
-			Text:     "最小化窗口",
+			Text: LangValue("miniwin"),
 			OnTriggered: func() {
 				Notify()
 			},
 		},
 		Action{
-			Text:        "关于",
+			Text: LangValue("about"),
 			OnTriggered: func() {
 				AboutAction()
 			},
