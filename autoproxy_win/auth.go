@@ -108,6 +108,10 @@ func AuthCheck(user string, passwd string) bool {
 	return true
 }
 
+func AuthGet() []AuthInfo {
+	return authCtrl.Items
+}
+
 func AuthAdd()  {
 	var dlg *walk.Dialog
 	var acceptPB, cancelPB *walk.PushButton

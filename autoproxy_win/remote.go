@@ -83,7 +83,9 @@ func RemoteGet() RemoteItem {
 	if len(list) > 0 {
 		return list[0]
 	}
-	return RemoteItem{}
+	return RemoteItem{
+		Protocal: "HTTPS",
+	}
 }
 
 func RemoteDelete(name string)  {
@@ -101,25 +103,23 @@ func RemoteUpdate(item RemoteItem) {
 	remoteCache = append(remoteCache, item)
 }
 
-func  ()  {
-	
-}
+var curRemoteItem RemoteItem
 
 func remoteWidget() []Widget {
 	var remote, protocal *walk.ComboBox
 	var auth *walk.RadioButton
 	var user, passwd, address, testurl *walk.LineEdit
 
-	remoteItem := RemoteGet()
+	curRemoteItem = RemoteGet()
 
 	updateHandler := func() {
-		protocal.SetText(remoteItem.Protocal)
-		address.SetText(remoteItem.Address)
-		auth.SetChecked(remoteItem.Auth)
-		user.SetEnabled(remoteItem.Auth)
-		passwd.SetEnabled(remoteItem.Auth)
-		user.SetText(remoteItem.User)
-		passwd.SetText(remoteItem.Password)
+		protocal.SetText(curRemoteItem.Protocal)
+		address.SetText(curRemoteItem.Address)
+		auth.SetChecked(curRemoteItem.Auth)
+		user.SetEnabled(curRemoteItem.Auth)
+		passwd.SetEnabled(curRemoteItem.Auth)
+		user.SetText(curRemoteItem.User)
+		passwd.SetText(curRemoteItem.Password)
 	}
 
 	return []Widget{
@@ -132,11 +132,11 @@ func remoteWidget() []Widget {
 			CurrentIndex:  0,
 			Model:         RemoteList(),
 			OnCurrentIndexChanged: func() {
-				remoteItem = RemoteFind(remote.Text())
+				curRemoteItem = RemoteFind(remote.Text())
 				updateHandler()
 			},
 			OnEditingFinished: func() {
-				remoteItem = RemoteFind(remote.Text())
+				curRemoteItem = RemoteFind(remote.Text())
 				updateHandler()
 			},
 		},
@@ -147,7 +147,10 @@ func remoteWidget() []Widget {
 
 		LineEdit{
 			AssignTo: &address,
-			Text: "",
+			Text: curRemoteItem.Address,
+			OnEditingFinished: func() {
+				curRemoteItem.Address = address.Text()
+			},
 		},
 
 		Label{
@@ -156,6 +159,10 @@ func remoteWidget() []Widget {
 		ComboBox{
 			AssignTo: &protocal,
 			Model: ProtocalOptions(),
+			Value: curRemoteItem.Protocal,
+			OnCurrentIndexChanged: func() {
+				curRemoteItem.Protocal = protocal.Text()
+			},
 		},
 
 		Label{
@@ -164,14 +171,14 @@ func remoteWidget() []Widget {
 		RadioButton{
 			AssignTo: &auth,
 			OnBoundsChanged: func() {
-				auth.SetChecked(remoteItem.Auth)
+				auth.SetChecked(curRemoteItem.Auth)
 			},
 			OnClicked: func() {
-				auth.SetChecked(!remoteItem.Auth)
-				remoteItem.Auth = !remoteItem.Auth
+				auth.SetChecked(!curRemoteItem.Auth)
+				curRemoteItem.Auth = !curRemoteItem.Auth
 
-				user.SetEnabled(remoteItem.Auth)
-				passwd.SetEnabled(remoteItem.Auth)
+				user.SetEnabled(curRemoteItem.Auth)
+				passwd.SetEnabled(curRemoteItem.Auth)
 			},
 		},
 
@@ -181,8 +188,11 @@ func remoteWidget() []Widget {
 
 		LineEdit{
 			AssignTo: &user,
-			Text: remoteItem.User,
-			Enabled: remoteItem.Auth,
+			Text: curRemoteItem.User,
+			Enabled: curRemoteItem.Auth,
+			OnEditingFinished: func() {
+				curRemoteItem.User = user.Text()
+			},
 		},
 
 		Label{
@@ -191,8 +201,11 @@ func remoteWidget() []Widget {
 
 		LineEdit{
 			AssignTo: &passwd,
-			Text: remoteItem.Password,
-			Enabled: remoteItem.Auth,
+			Text: curRemoteItem.Password,
+			Enabled: curRemoteItem.Auth,
+			OnEditingFinished: func() {
+				curRemoteItem.Password = passwd.Text()
+			},
 		},
 
 		PushButton{
@@ -222,8 +235,8 @@ func RemoteServer()  {
 		Icon: walk.IconShield(),
 		DefaultButton: &acceptPB,
 		CancelButton: &cancelPB,
-		Size: Size{350, 300},
-		MinSize: Size{350, 300},
+		Size: Size{250, 300},
+		MinSize: Size{250, 300},
 		Layout:  VBox{},
 		Children: []Widget{
 			Composite{
@@ -237,9 +250,18 @@ func RemoteServer()  {
 						AssignTo: &acceptPB,
 						Text:     LangValue("save"),
 						OnClicked: func() {
-							
-							
-							
+							if curRemoteItem.Auth {
+								if curRemoteItem.User == "" || curRemoteItem.Password == "" {
+									ErrorBoxAction(dlg, LangValue("inputuserandpasswd"))
+									return
+								}
+							}
+							if curRemoteItem.Name == "" || curRemoteItem.Address == "" {
+								ErrorBoxAction(dlg, LangValue("inputnameandaddress"))
+								return
+							}
+							RemoteUpdate(curRemoteItem)
+							ConsoleRemoteUpdate()
 							dlg.Accept()
 						},
 					},

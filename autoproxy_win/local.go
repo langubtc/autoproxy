@@ -264,6 +264,9 @@ func LocalServer()  {
 						Text:     LangValue("accpet"),
 						OnClicked: func() {
 							ConsoleUpdate()
+							if AuthSwitchGet() && len(AuthGet()) == 0 {
+								InfoBoxAction(dlg, LangValue("addauthcert"))
+							}
 							dlg.Accept()
 						},
 					},

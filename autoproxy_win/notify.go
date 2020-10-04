@@ -8,12 +8,25 @@ import (
 
 var notify *walk.NotifyIcon
 
-func NotifyUpdate(icon *walk.Icon, flow string)  {
+func NotifyUpdateIcon(icon *walk.Icon)  {
 	if notify == nil {
 		return
 	}
 	notify.SetIcon(icon)
+}
+
+func NotifyUpdateFlow(flow string)  {
+	if notify == nil {
+		return
+	}
 	notify.SetToolTip(flow)
+}
+
+func Notify()  {
+	if notify == nil {
+		NotifyInit()
+	}
+	mainWindow.SetVisible(false)
 }
 
 func NotifyExit()  {
@@ -46,6 +59,22 @@ func NotifyInit()  {
 		walk.App().Exit(0)
 	})
 
+	showBut := walk.NewAction()
+	err = showBut.SetText(LangValue("showwindows"))
+	if err != nil {
+		logs.Error("notify new action fail, %s", err.Error())
+		return
+	}
+
+	showBut.Triggered().Attach(func() {
+		mainWindow.SetVisible(true)
+	})
+
+	if err := notify.ContextMenu().Actions().Add(showBut); err != nil {
+		logs.Error("notify add action fail, %s", err.Error())
+		return
+	}
+
 	if err := notify.ContextMenu().Actions().Add(exitBut); err != nil {
 		logs.Error("notify add action fail, %s", err.Error())
 		return
@@ -65,9 +94,3 @@ func NotifyInit()  {
 	notify.SetVisible(true)
 }
 
-func Notify()  {
-	if notify == nil {
-		NotifyInit()
-	}
-	mainWindow.SetVisible(false)
-}

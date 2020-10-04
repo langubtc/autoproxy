@@ -89,6 +89,30 @@ func IsIPv4(ip net.IP) bool {
 	return strings.Index(ip.String(), ".") != -1
 }
 
+func ByteViewLite(size int64) string {
+	if size < 1024 {
+		return fmt.Sprintf("%db", size)
+	} else if size < (1024 * 1024) {
+		return fmt.Sprintf("%.1fkb", float64(size)/float64(1024))
+	} else {
+		return fmt.Sprintf("%.1fmb", float64(size)/float64(1024*1024))
+	}
+}
+
+func ByteView(size int64) string {
+	if size < 1024 {
+		return fmt.Sprintf("%dB", size)
+	} else if size < (1024 * 1024) {
+		return fmt.Sprintf("%.1fKB", float64(size)/float64(1024))
+	} else if size < (1024 * 1024 * 1024) {
+		return fmt.Sprintf("%.1fMB", float64(size)/float64(1024*1024))
+	} else if size < (1024 * 1024 * 1024 * 1024) {
+		return fmt.Sprintf("%.1fGB", float64(size)/float64(1024*1024*1024))
+	} else {
+		return fmt.Sprintf("%.1fTB", float64(size)/float64(1024*1024*1024*1024))
+	}
+}
+
 func init()  {
 	mathrand.Seed(time.Now().Unix())
 }

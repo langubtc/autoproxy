@@ -62,6 +62,10 @@
   value:
   - 查看凭证
   - ViewAuth
+- key: addauthcert
+  value:
+  - 无有效凭证
+  - No valid certificate
 - key: addcred
   value:
   - 添加凭证
@@ -186,6 +190,10 @@
   value:
   - 用户不存在
   - User does not exist
+- key: inputnameandaddress
+  value:
+  - 请输入名称和地址
+  - Please enter your remote name and address
 - key: inputuserandpasswd
   value:
   - 请输入用户名和密码
@@ -202,6 +210,10 @@
   value:
   - 重启后生效
   - Settings take effect after restart
+- key: showwindows
+  value:
+  - 显示窗口
+  - Show Windows
 - key: runlog
   value:
   - 运行日志

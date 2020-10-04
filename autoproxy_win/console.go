@@ -16,6 +16,10 @@ func ConsoleUpdate()  {
 	consoleMode.SetCurrentIndex(ModeOptionsIdx())
 }
 
+func ConsoleRemoteUpdate()  {
+	consoleRemoteProxy.SetModel(RemoteList())
+}
+
 func ConsoleWidget() []Widget {
 	return []Widget{
 		Label{

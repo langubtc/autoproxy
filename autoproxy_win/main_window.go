@@ -23,7 +23,10 @@ func waitWindows()  {
 }
 
 func statusUpdate()  {
-	NotifyUpdate(ICON_Network_Disable, "")
+
+
+
+
 }
 
 func init()  {
@@ -51,7 +54,7 @@ func mainWindows() {
 		MenuItems: MenuBarInit(),
 		Children: []Widget{
 			Composite{
-				Layout: Grid{Columns: 2, MarginsZero: true},
+				Layout: Grid{Columns: 3},
 				Children: StatWidget(),
 			},
 			Composite{
