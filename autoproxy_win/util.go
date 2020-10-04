@@ -113,6 +113,19 @@ func ByteView(size int64) string {
 	}
 }
 
+func StringList(list []string) string {
+	var body string
+	for idx,v := range list {
+		if idx == len(list) - 1 {
+			body += fmt.Sprintf("%s",v)
+		}else {
+			body += fmt.Sprintf("%s;",v)
+		}
+	}
+	return body
+}
+
+
 func init()  {
 	mathrand.Seed(time.Now().Unix())
 }

@@ -36,7 +36,7 @@ func StatUpdate(requst int, flowsize int)  {
 	totalflow.SetText(totalFlowShow())
 }
 
-func StatInit()  {
+func StatInit() error {
 	TotalFlowSize = DataLongValueGet("statflowsize")
 	TotalReqCnt = DataLongValueGet("stattotalreq")
 
@@ -54,6 +54,8 @@ func StatInit()  {
 			}
 		}
 	}()
+
+	return nil
 }
 
 func totalFlowShow() string {

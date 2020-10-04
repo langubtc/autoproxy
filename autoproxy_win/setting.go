@@ -1,9 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"golang.org/x/sys/windows/registry"
 	"strings"
+	"github.com/astaxie/beego/logs"
+	"github.com/lxn/walk"
+	. "github.com/lxn/walk/declarative"
 )
 
 const REGISTER_KEY = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Internet Settings"
@@ -17,10 +19,14 @@ type ProxySetting struct {
 func ProxyEnable() error {
 	k, err := registry.OpenKey(registry.CURRENT_USER, REGISTER_KEY, registry.ALL_ACCESS)
 	if err != nil {
+		logs.Error(err.Error())
 		return err
 	}
+	defer k.Close()
+
 	value, _, err:= k.GetIntegerValue("ProxyEnable")
 	if err != nil {
+		logs.Error(err.Error())
 		return err
 	}
 	if value == 1 {
@@ -32,10 +38,14 @@ func ProxyEnable() error {
 func ProxyDisable() error {
 	k, err := registry.OpenKey(registry.CURRENT_USER, REGISTER_KEY, registry.ALL_ACCESS)
 	if err != nil {
+		logs.Error(err.Error())
 		return err
 	}
+	defer k.Close()
+
 	value, _, err:= k.GetIntegerValue("ProxyEnable")
 	if err != nil {
+		logs.Error(err.Error())
 		return err
 	}
 	if value == 0 {
@@ -47,12 +57,16 @@ func ProxyDisable() error {
 func ProxySettingGet() *ProxySetting {
 	k, err := registry.OpenKey(registry.CURRENT_USER, REGISTER_KEY, registry.ALL_ACCESS)
 	if err != nil {
+		logs.Error(err.Error())
 		return nil
 	}
+	defer k.Close()
+
 	var setting ProxySetting
 
 	value, _, err:= k.GetIntegerValue("ProxyEnable")
 	if err != nil {
+		logs.Error(err.Error())
 		return nil
 	}
 	if value == 1 {
@@ -61,12 +75,14 @@ func ProxySettingGet() *ProxySetting {
 
 	body, _, err := k.GetStringValue("ProxyServer")
 	if err != nil {
+		logs.Error(err.Error())
 		return nil
 	}
 	setting.Server = body
 
 	body, _, err = k.GetStringValue("ProxyOverride")
 	if err != nil {
+		logs.Error(err.Error())
 		return nil
 	}
 	setting.Override = strings.Split(body, ";")
@@ -76,16 +92,20 @@ func ProxySettingGet() *ProxySetting {
 func ProxySettingSet(setting *ProxySetting) error {
 	k, err := registry.OpenKey(registry.CURRENT_USER, REGISTER_KEY, registry.ALL_ACCESS)
 	if err != nil {
+		logs.Error(err.Error())
 		return nil
 	}
+	defer k.Close()
 
 	err = k.SetStringValue("ProxyServer", setting.Server)
 	if err != nil {
+		logs.Error(err.Error())
 		return err
 	}
 
 	err = k.SetStringValue("ProxyOverride", StringList(setting.Override))
 	if err != nil {
+		logs.Error(err.Error())
 		return err
 	}
 
@@ -101,27 +121,138 @@ func ProxySettingSet(setting *ProxySetting) error {
 func ProxyOverride(override []string) error {
 	k, err := registry.OpenKey(registry.CURRENT_USER, REGISTER_KEY, registry.ALL_ACCESS)
 	if err != nil {
+		logs.Error(err.Error())
 		return nil
 	}
+	defer k.Close()
 	return k.SetStringValue("ProxyOverride", StringList(override))
 }
 
 func ProxyServer(server string) error {
 	k, err := registry.OpenKey(registry.CURRENT_USER, REGISTER_KEY, registry.ALL_ACCESS)
 	if err != nil {
+		logs.Error(err.Error())
 		return nil
 	}
+	defer k.Close()
 	return k.SetStringValue("ProxyServer", server)
 }
 
-func StringList(list []string) string {
-	var body string
-	for idx,v := range list {
-		if idx == len(list) - 1 {
-			body += fmt.Sprintf("%s",v)
-		}else {
-			body += fmt.Sprintf("%s;",v)
-		}
+func FollowServerGet() bool {
+	if DataIntValueGet("followlocalserver") > 0 {
+		return true
 	}
-	return body
+	return false
+}
+
+func FollowServerSet(flag bool)  {
+	if flag {
+		DataIntValueSet("followlocalserver", 1)
+	} else {
+		DataIntValueSet("followlocalserver", 0)
+	}
+}
+
+var proxyServer *walk.LineEdit
+var override *walk.TextEdit
+var usingproxy *walk.RadioButton
+var followlocalservice *walk.RadioButton
+
+var proxysetting *ProxySetting
+
+func InternetSettingWidget() []Widget {
+	proxysetting = ProxySettingGet()
+
+	return []Widget{
+		Label{
+			Text: LangValue("proxyserver") + ":",
+		},
+		LineEdit{
+			AssignTo: &proxyServer,
+			Text: proxysetting.Server,
+		},
+		Label{
+			Text: LangValue("override") + ":",
+		},
+		TextEdit{
+			AssignTo: &override,
+			Text: StringList(proxysetting.Override),
+		},
+		Label{
+			Text: LangValue("usingproxy") + ":",
+		},
+		RadioButton{
+			AssignTo: &usingproxy,
+			OnBoundsChanged: func() {
+				usingproxy.SetChecked(proxysetting.Enable)
+			},
+			OnClicked: func() {
+				usingproxy.SetChecked(!proxysetting.Enable)
+				proxysetting.Enable = !proxysetting.Enable
+			},
+		},
+		Label{
+			Text: LangValue("followlocalservice") + ":",
+		},
+		RadioButton{
+			AssignTo: &followlocalservice,
+			OnBoundsChanged: func() {
+				followlocalservice.SetChecked(FollowServerGet())
+			},
+			OnClicked: func() {
+				followlocalservice.SetChecked(!FollowServerGet())
+				FollowServerSet(!FollowServerGet())
+			},
+		},
+	}
+}
+
+func InternetSetting()  {
+	var dlg *walk.Dialog
+	var acceptPB, cancelPB *walk.PushButton
+
+	_, err := Dialog{
+		AssignTo: &dlg,
+		Title: LangValue("internetsettings"),
+		Icon: walk.IconShield(),
+		DefaultButton: &acceptPB,
+		CancelButton: &cancelPB,
+		Size: Size{250, 300},
+		MinSize: Size{250, 300},
+		Layout:  VBox{},
+		Children: []Widget{
+			Composite{
+				Layout: Grid{Columns: 2},
+				Children: InternetSettingWidget(),
+			},
+			Composite{
+				Layout: HBox{},
+				Children: []Widget{
+					PushButton{
+						AssignTo: &acceptPB,
+						Text:     LangValue("setting"),
+						OnClicked: func() {
+							err := ProxySettingSet(proxysetting)
+							if err != nil {
+								ErrorBoxAction(dlg, err.Error())
+							} else {
+								dlg.Accept()
+							}
+						},
+					},
+					PushButton{
+						AssignTo:  &cancelPB,
+						Text:      LangValue("cancel"),
+						OnClicked: func() {
+							dlg.Cancel()
+						},
+					},
+				},
+			},
+		},
+	}.Run(mainWindow)
+
+	if err != nil {
+		logs.Error(err.Error())
+	}
 }

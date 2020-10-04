@@ -27,6 +27,17 @@ func SettingWidget() []Widget {
 
 	return []Widget{
 		Label{
+			Text: LangValue("langname") + ":",
+		},
+		ComboBox{
+			AssignTo: &lang,
+			CurrentIndex:  LangOptionIdx(),
+			Model:         LangOptionGet(),
+			OnCurrentIndexChanged: func() {
+				LangOptionSet(lang.CurrentIndex())
+			},
+		},
+		Label{
 			Text: LangValue("whetherauto") + ":",
 		},
 		RadioButton{
@@ -39,18 +50,6 @@ func SettingWidget() []Widget {
 				AutoRunningSet(!AutoRunningGet())
 			},
 		},
-		Label{
-			Text: LangValue("langname") + ":",
-		},
-		ComboBox{
-			AssignTo: &lang,
-			CurrentIndex:  LangOptionIdx(),
-			Model:         LangOptionGet(),
-			OnCurrentIndexChanged: func() {
-				LangOptionSet(lang.CurrentIndex())
-			},
-		},
-
 	}
 }
 

@@ -140,8 +140,8 @@
   - AuthSwitch
 - key: whetherauto
   value:
-  - 自动启动
-  - AutoSwitch
+  - 默认启动
+  - AutoRunning
 - key: error
   value:
   - 错误
@@ -218,3 +218,23 @@
   value:
   - 运行日志
   - Runlog
+- key: proxyserver
+  value:
+  - 代理服务
+  - ProxyServer
+- key: internetsettings
+  value:
+  - Internet设置
+  - Internet Settings
+- key: override
+  value:
+  - 例外网址
+  - Override
+- key: usingproxy
+  value:
+  - 使用代理
+  - UsingProxy
+- key: followlocalservice
+  value:
+  - 跟随服务
+  - Follow Service

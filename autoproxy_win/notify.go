@@ -48,6 +48,12 @@ func NotifyInit()  {
 		return
 	}
 
+	err = notify.SetIcon(ICON_Network_Disable)
+	if err != nil {
+		logs.Error("set notify icon fail, %s", err.Error())
+		return
+	}
+
 	exitBut := walk.NewAction()
 	err = exitBut.SetText(LangValue("exit"))
 	if err != nil {

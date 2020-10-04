@@ -16,6 +16,12 @@ func MenuBarInit() []MenuItem {
 					},
 				},
 				Action{
+					Text: LangValue("internetsettings"),
+					OnTriggered: func() {
+						InternetSetting()
+					},
+				},
+				Action{
 					Text: LangValue("localproxy"),
 					OnTriggered: func() {
 						LocalServer()
@@ -27,6 +33,7 @@ func MenuBarInit() []MenuItem {
 						RemoteServer()
 					},
 				},
+
 				Action{
 					Text: LangValue("runlog"),
 					OnTriggered: func() {

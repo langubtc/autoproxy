@@ -35,5 +35,10 @@ func main()  {
 		logs.Error(err.Error())
 		return
 	}
+	err = StatInit()
+	if err != nil {
+		logs.Error(err.Error())
+		return
+	}
 	mainWindows()
 }
