@@ -8,26 +8,32 @@ func main()  {
 	err := FileInit()
 	if err != nil {
 		logs.Error(err.Error())
+		return
 	}
 	err = LogInit()
 	if err != nil {
 		logs.Error(err.Error())
+		return
 	}
 	err = BoxInit()
 	if err != nil {
 		logs.Error(err.Error())
+		return
 	}
 	err = LanguageInit()
 	if err != nil {
 		logs.Error(err.Error())
+		return
 	}
 	err = AuthInit()
 	if err != nil {
 		logs.Error(err.Error())
+		return
 	}
 	err = IconInit()
 	if err != nil {
 		logs.Error(err.Error())
+		return
 	}
 	mainWindows()
 }

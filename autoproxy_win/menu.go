@@ -10,18 +10,21 @@ func MenuBarInit() []MenuItem {
 			Text: LangValue("setting"),
 			Items: []MenuItem{
 				Action{
-					Text:     LangValue("localproxy"),
+					Text: LangValue("basesetting"),
+					OnTriggered: func() {
+						BaseSetting()
+					},
+				},
+				Action{
+					Text: LangValue("localproxy"),
 					OnTriggered: func() {
 						LocalServer()
 					},
 				},
 				Action{
 					Text: LangValue("remoteproxy"),
-				},
-				Action{
-					Text: LangValue("basesetting"),
 					OnTriggered: func() {
-						BaseSetting()
+						RemoteServer()
 					},
 				},
 				Action{

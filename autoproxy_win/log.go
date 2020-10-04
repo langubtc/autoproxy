@@ -26,7 +26,6 @@ func LogInit() error {
 	if err != nil {
 		return err
 	}
-	logs.Async()
 	err = logs.SetLogger(logs.AdapterFile, string(value))
 	if err != nil {
 		return err

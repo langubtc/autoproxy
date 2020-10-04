@@ -26,6 +26,14 @@
   value:
   - 取消
   - Cancel
+- key: save
+  value:
+  - 保存
+  - Save
+- key: test
+  value:
+  - 测试
+  - Test
 - key: localproxy
   value:
   - 本地代理
@@ -102,6 +110,10 @@
   value:
   - 本地地址
   - LocalAddress
+- key: remoteaddress
+  value:
+  - 代理地址
+  - RemoteAddress
 - key: port
   value:
   - 端口

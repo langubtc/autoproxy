@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/astaxie/beego/logs"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
 	"time"
@@ -40,7 +41,7 @@ var protocal  *walk.RadioButton
 
 func mainWindows() {
 	CapSignal(CloseWindows)
-	MainWindow{
+	cnt, err := MainWindow{
 		Title:   "AutoProxy " + VersionGet(),
 		Icon: ICON_Main,
 		AssignTo: &mainWindow,
@@ -63,6 +64,12 @@ func mainWindows() {
 			},
 		},
 	}.Run()
+
+	if err != nil {
+		logs.Error(err.Error())
+	} else {
+		logs.Info("main windows exit %d", cnt)
+	}
 
 	CloseWindows()
 }

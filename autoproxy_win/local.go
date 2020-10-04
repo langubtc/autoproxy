@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/astaxie/beego/logs"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
@@ -42,6 +43,10 @@ func ProtocalOptionsIdx() int {
 	return int(DataIntValueGet("LocalProtocal"))
 }
 
+func ProtcalOptionsGet() string {
+	return ProtocalOptions()[ProtocalOptionsIdx()]
+}
+
 func ProtcalOptionsSet(idx int)  {
 	err := DataIntValueSet("LocalProtocal", uint32(idx))
 	if err != nil {
@@ -81,10 +86,13 @@ func PortOptionSet(value int)  {
 	}
 }
 
-func RemoteOptions() []*Options {
-	return []*Options{
-		{"easymesh.cc:8080","easymesh.cc"},
+func LocalAddressGet() string {
+	iface := IfaceOptions()[LocalIfaceOptionsIdx()]
+	if iface == "0.0.0.0" {
+		iface = "127.0.0.1"
 	}
+	return fmt.Sprintf("%s://%s:%d",
+		ProtcalOptionsGet(), iface, int(PortOptionGet()))
 }
 
 var ifaceList []string
@@ -117,8 +125,9 @@ func IfaceOptions() []string {
 }
 
 func LocalIfaceOptionsIdx() int {
+	ifaces := IfaceOptions()
 	ifaceName := DataStringValueGet("LocalIface")
-	for idx, v := range ifaceList {
+	for idx, v := range ifaces {
 		if v == ifaceName {
 			return idx
 		}
@@ -160,7 +169,6 @@ func localWidget() []Widget {
 		ComboBox{
 			AssignTo: &iface,
 			CurrentIndex:  LocalIfaceOptionsIdx(),
-			RightToLeftReading: false,
 			Model:         IfaceOptions(),
 			OnCurrentIndexChanged: func() {
 				LocalIfaceOptionsSet(iface.Text())
@@ -227,16 +235,6 @@ func localWidget() []Widget {
 				AuthSwitchSet(!AuthSwitchGet())
 			},
 		},
-		Label{
-			Text: LangValue("remoteproxy") + ":",
-		},
-		ComboBox{
-			BindingMember: "Name",
-			DisplayMember: "Detail",
-			CurrentIndex:  0,
-			Model:         RemoteOptions(),
-		},
-
 	}
 }
 
@@ -265,13 +263,15 @@ func LocalServer()  {
 						AssignTo: &acceptPB,
 						Text:     LangValue("accpet"),
 						OnClicked: func() {
-
+							ConsoleUpdate()
+							dlg.Accept()
 						},
 					},
 					PushButton{
 						AssignTo:  &cancelPB,
 						Text:      LangValue("cancel"),
 						OnClicked: func() {
+							ConsoleUpdate()
 							dlg.Cancel()
 						},
 					},

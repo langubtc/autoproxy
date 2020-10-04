@@ -16,7 +16,7 @@ func boxAction(from walk.Form, title string, icon *walk.Icon, message string, ti
 			for  {
 				time.Sleep(timeout)
 				if dlg != nil && dlg.Visible() {
-					dlg.Cancel()
+					dlg.Accept()
 					break
 				}
 			}
@@ -39,7 +39,7 @@ func boxAction(from walk.Form, title string, icon *walk.Icon, message string, ti
 				AssignTo:  &cancelPB,
 				Text:      LangValue("accpet"),
 				OnClicked: func() {
-					dlg.Cancel()
+					dlg.Accept()
 				},
 			},
 		},
@@ -55,7 +55,7 @@ func ErrorBoxAction(form walk.Form, message string) {
 }
 
 func InfoBoxAction(form walk.Form, message string) {
-	boxAction(form, LangValue("info"), walk.IconInformation(), message, 2*time.Second)
+	boxAction(form, LangValue("info"), walk.IconInformation(), message, 0)
 }
 
 func ConfirmBoxAction(form walk.Form, message string) {
