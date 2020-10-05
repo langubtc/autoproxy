@@ -113,6 +113,7 @@ func ButtonWight() []Widget {
 							ErrorBoxAction(mainWindow, err.Error())
 						}
 
+						StatRunningStatus(1)
 						stop.SetEnabled(true)
 					}
 				}()
@@ -135,6 +136,7 @@ func ButtonWight() []Widget {
 							logs.Error("setting proxy disable fail, %s", err.Error())
 							ErrorBoxAction(mainWindow, err.Error())
 						}
+						StatRunningStatus(0)
 						start.SetEnabled(true)
 					}
 				}()

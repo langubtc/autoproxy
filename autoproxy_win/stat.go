@@ -16,24 +16,23 @@ var TotalFlowSize uint64
 var TotalReqCnt   uint64
 var RealTimeFlow  uint64
 
-var LastUpdate    time.Time
-var LastFlowSize   int
-var LastRequestCnt int
+var LastUpdate     time.Time
 
-func StatUpdate(requst int, flowsize int)  {
+func StatUpdate(requst uint64, flowsize uint64)  {
+	if requst == 0 || flowsize == 0 {
+		return
+	}
 	now := time.Now()
 
-	TotalReqCnt += uint64(requst - LastRequestCnt)
-	TotalFlowSize += uint64(flowsize - LastFlowSize)
-	RealTimeFlow = uint64(flowsize / int(now.Sub(LastUpdate).Seconds()))
+	TotalReqCnt += requst
+	TotalFlowSize += flowsize
+	RealTimeFlow = flowsize / uint64(now.Sub(LastUpdate).Seconds())
 
-	LastFlowSize = flowsize
-	LastRequestCnt = requst
 	LastUpdate = now
-
 	requestCount.SetText(requestShow())
 	realtimeflow.SetText(realTimeShow())
 	totalflow.SetText(totalFlowShow())
+	NotifyUpdateFlow(realTimeShow())
 }
 
 func StatInit() error {
@@ -121,6 +120,7 @@ func StatWidget() []Widget {
 			AssignTo: &requestCount,
 			Text: requestShow(),
 			Font: defaultFont,
+			MinSize: Size{Width: 100},
 		},
 		Label{
 			Text: LangValue("realtimeflow"),
@@ -133,6 +133,7 @@ func StatWidget() []Widget {
 			AssignTo: &realtimeflow,
 			Text: realTimeShow(),
 			Font: defaultFont,
+			MinSize: Size{Width: 100},
 		},
 		Label{
 			Text: LangValue("totalflow"),
@@ -145,6 +146,7 @@ func StatWidget() []Widget {
 			AssignTo: &totalflow,
 			Text: totalFlowShow(),
 			Font: defaultFont,
+			MinSize: Size{Width: 100},
 		},
 	}
 }

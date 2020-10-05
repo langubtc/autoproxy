@@ -9,6 +9,14 @@ import (
 
 var access engin.Access
 
+func StatGet() (uint64, uint64) {
+	acc := access
+	if acc != nil {
+		return acc.Stat()
+	}
+	return 0,0
+}
+
 func AuthSwitch(auth *engin.AuthInfo) bool {
 	if auth == nil {
 		return false

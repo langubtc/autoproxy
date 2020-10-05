@@ -26,7 +26,9 @@ type HttpAccess struct {
 	sync.WaitGroup
 
 	requset  uint64
+	lastreq  uint64
 	flowsize uint64
+	lastflow uint64
 
 	authHandler func(auth *AuthInfo) bool
 	forwardHandler func(address string, r *http.Request) Forward
@@ -87,7 +89,16 @@ func (acc *HttpAccess)AuthHttp(r *http.Request) bool {
 }
 
 func (acc *HttpAccess)Stat() (uint64,uint64) {
-	return acc.requset, acc.flowsize
+	tempreq := acc.requset
+	tempflow := acc.flowsize
+
+	req := tempreq - acc.lastreq
+	flow := tempflow - acc.lastflow
+
+	acc.lastreq = tempreq
+	acc.lastflow = tempflow
+
+	return req, flow
 }
 
 func (acc *HttpAccess)Shutdown() error {

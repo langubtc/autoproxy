@@ -23,10 +23,7 @@ func waitWindows()  {
 }
 
 func statusUpdate()  {
-
-
-
-
+	StatUpdate(StatGet())
 }
 
 func init()  {
@@ -34,7 +31,7 @@ func init()  {
 		waitWindows()
 		for  {
 			statusUpdate()
-			time.Sleep(time.Second)
+			time.Sleep(2 * time.Second)
 		}
 	}()
 }
@@ -78,6 +75,10 @@ func mainWindows() {
 }
 
 func CloseWindows()  {
+	err := ProxyDisable()
+	if err != nil {
+		logs.Error(err.Error())
+	}
 	if mainWindow != nil {
 		mainWindow.Close()
 		mainWindow = nil
