@@ -72,7 +72,8 @@ func (h *httpsProtocal)http(r *http.Request) (*http.Response, error) {
 func (h *httpsProtocal)https(address string, r *http.Request) (net.Conn, error) {
 	server, err := net.DialTimeout("tcp", h.address, h.timeout)
 	if err != nil {
-		return nil, fmt.Errorf("connect to proxy %s failed, err=%s", h.address, err.Error())
+		return nil, fmt.Errorf("connect to proxy %s failed, err=%s",
+			h.address, err.Error())
 	}
 
 	if h.config != nil {
@@ -106,11 +107,27 @@ func (h *httpsProtocal)https(address string, r *http.Request) (net.Conn, error) 
 	return server, nil
 }
 
-func NewHttpsProtcal(address string, auth *AuthInfo, config *tls.Config) Forward {
+func (d *httpsProtocal)Close() error {
+	d.trans.CloseIdleConnections()
+	return nil
+}
+
+func NewHttpsProtcal(address string, timeout int, auth *AuthInfo, tlsEnable bool) (Forward, error) {
+	var config *tls.Config
+
+	if tlsEnable {
+		var err error
+		config, err = TlsConfigClient(address)
+		if err != nil {
+			logs.Error("make tls config client fail, %s", err.Error())
+			return nil, err
+		}
+	}
+
 	h := new(httpsProtocal)
 	h.address = address
 	h.config = config
-	h.timeout = time.Second * time.Duration(30)
+	h.timeout = time.Second * time.Duration(timeout)
 
 	scheme := "http"
 	if config != nil {
@@ -126,17 +143,14 @@ func NewHttpsProtcal(address string, auth *AuthInfo, config *tls.Config) Forward
 			url.QueryEscape(auth.User), url.QueryEscape(auth.Token), address)
 	}
 
-	logs.Info("proxy", proxy)
+	logs.Info("proxy %s init success", proxy)
 
 	h.proxycfg = &httpproxy.Config{HTTPProxy: proxy, HTTPSProxy: proxy}
 	h.proxyfunc = h.proxycfg.ProxyFunc()
 
-	h.trans = newTransport(30, config)
+	h.trans = newTransport(timeout, config)
 	h.trans.Proxy = h.ProxyFunc
 
-	return h
+	return h, nil
 }
 
-func NewHttpProtcal(address string, auth *AuthInfo) Forward {
-	return NewHttpsProtcal(address, auth, nil)
-}

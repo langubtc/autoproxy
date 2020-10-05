@@ -1,6 +1,7 @@
 package engin
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/base64"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -19,9 +21,17 @@ func PublicFailDelay() {
 type HttpAccess struct {
 	Timeout int
 	Address string
+	httpserver *http.Server
+	sync.WaitGroup
+
+	authHandler func(auth *AuthInfo) bool
+	forwardHandler func(address string, r *http.Request) Forward
 }
 
 type Access interface {
+	Shutdown() error
+	AuthHandlerSet(func(*AuthInfo) bool)
+	ForwardHandlerSet(func(address string, r *http.Request) Forward)
 }
 
 func NoProxyHandler(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +45,9 @@ func NoProxyHandler(w http.ResponseWriter, r *http.Request) {
 func AuthFailHandler(w http.ResponseWriter, r *http.Request)  {
 	PublicFailDelay()
 	logs.Warn("Request authentication failed. RemoteAddr: ", r.RemoteAddr)
-	http.Error(w, "Request authentication failed.", http.StatusUnauthorized)
+	http.Error(w,
+		"Request authentication failed.",
+		http.StatusUnauthorized)
 }
 
 func AuthInfoParse(r *http.Request) *AuthInfo {
@@ -54,18 +66,50 @@ func AuthInfoParse(r *http.Request) *AuthInfo {
 	return &AuthInfo{User: ctx[0], Token: ctx[1]}
 }
 
-func AuthHttp(r *http.Request) bool {
-	return true
+func (acc *HttpAccess)AuthHandlerSet(handler func(auth *AuthInfo) bool)  {
+	acc.authHandler = handler
+}
+
+func (acc *HttpAccess)ForwardHandlerSet(handler func(address string, r *http.Request) Forward )  {
+	acc.forwardHandler = handler
+}
+
+func (acc *HttpAccess)AuthHttp(r *http.Request) bool {
+	if acc.authHandler == nil {
+		return true
+	}
+	return acc.authHandler(AuthInfoParse(r))
+}
+
+func (acc *HttpAccess)Shutdown() error {
+	context, cencel := context.WithTimeout(context.Background(), 60)
+	err := acc.httpserver.Shutdown(context)
+	cencel()
+	if err != nil {
+		logs.Error("shut down fail, %s", err.Error())
+	}
+	acc.Wait()
+	return err
+}
+
+func DebugReqeust(r *http.Request) {
+	var headers string
+	for key, value := range r.Header {
+		headers += fmt.Sprintf("[%s:%s]",key,value)
+	}
+	logs.Info("%s %s %s %s",r.RemoteAddr, r.Method, r.URL.String(), headers)
 }
 
 func (acc *HttpAccess)ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if AuthHttp(r) == false {
+	DebugReqeust(r)
+
+	if acc.AuthHttp(r) == false {
 		AuthFailHandler(w, r)
 		return
 	}
 
 	if r.Method == "CONNECT" {
-		HttpsRoundTripper(w, r)
+		acc.HttpsRoundTripper(w, r)
 		return
 	}
 
@@ -76,7 +120,7 @@ func (acc *HttpAccess)ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	removeProxyHeaders(r)
 
-	rsp, err := HttpRoundTripper(r)
+	rsp, err := acc.HttpRoundTripper(r)
 	if err != nil {
 		errStr := fmt.Sprintf("transport %s %s failed! %s", r.Host, r.URL.String(), err.Error())
 		logs.Warn(errStr)
@@ -118,14 +162,20 @@ func removeProxyHeaders(r *http.Request)  {
 	r.Header.Del("Proxy-Authorization")
 }
 
-func NewHttpsAccess(addr string, timeout int, config *tls.Config) Access {
+func NewHttpsAccess(addr string, timeout int, tlsEnable bool) (Access, error) {
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		logs.Error("listen address fail", addr)
-		panic(err.Error())
+		return nil, err
 	}
 
-	if config != nil {
+	var config *tls.Config
+	if tlsEnable {
+		config, err = TlsConfigServer(nil)
+		if err != nil {
+			logs.Error("make tls config server fail, %s", err.Error())
+			return nil, err
+		}
 		lis = tls.NewListener(lis, config)
 	}
 
@@ -134,6 +184,7 @@ func NewHttpsAccess(addr string, timeout int, config *tls.Config) Access {
 	acc.Timeout = timeout
 
 	tmout := time.Duration(timeout) * time.Second
+
 	httpserver := &http.Server{
 		Handler:acc,
 		ReadTimeout:tmout,
@@ -141,11 +192,15 @@ func NewHttpsAccess(addr string, timeout int, config *tls.Config) Access {
 		TLSConfig: config,
 	}
 
+	acc.httpserver = httpserver
+
+	acc.Add(1)
+
 	go func() {
+		defer acc.Done()
 		err = httpserver.Serve(lis)
 		if err != nil {
-			logs.Error("http server fail", err.Error())
-			panic(err.Error())
+			logs.Error("http server ", err.Error())
 		}
 	}()
 
@@ -155,9 +210,7 @@ func NewHttpsAccess(addr string, timeout int, config *tls.Config) Access {
 		logs.Info("access https start success.")
 	}
 
-	return acc
+	return acc,nil
 }
 
-func NewHttpAccess(addr string, timeout int) Access {
-	return NewHttpsAccess(addr, timeout, nil)
-}
+

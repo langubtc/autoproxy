@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"github.com/astaxie/beego/logs"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
 )
@@ -53,6 +55,11 @@ func ConsoleWidget() []Widget {
 			Model:         ModeOptions(),
 			OnCurrentIndexChanged: func() {
 				ModeOptionsSet(consoleMode.CurrentIndex())
+				if ProtcalOptionsGet() == "local" {
+					consoleRemoteProxy.SetEnabled(false)
+				} else {
+					consoleRemoteProxy.SetEnabled(true)
+				}
 			},
 		},
 		Label{
@@ -61,24 +68,76 @@ func ConsoleWidget() []Widget {
 		ComboBox{
 			AssignTo:      &consoleRemoteProxy,
 			CurrentIndex:  0,
+			OnBoundsChanged: func() {
+				if ProtcalOptionsGet() == "local" {
+					consoleRemoteProxy.SetEnabled(false)
+				} else {
+					consoleRemoteProxy.SetEnabled(true)
+				}
+			},
 			Model:         RemoteList(),
 		},
 	}
 }
 
 func ButtonWight() []Widget {
+	var start *walk.PushButton
+	var stop *walk.PushButton
+
 	return []Widget{
 		PushButton{
-			Text:     LangValue("start"),
+			AssignTo:  &start,
+			Text:      LangValue("start"),
 			OnClicked: func() {
+				start.SetEnabled(false)
 
+				go func() {
+					err := ServerStart()
+					if err != nil {
+						ErrorBoxAction(mainWindow, err.Error())
+						start.SetEnabled(true)
+					} else {
+						address := fmt.Sprintf("%s:%d",
+							IfaceOptions()[LocalIfaceOptionsIdx()],
+							PortOptionGet())
+
+						err = ProxyServer(address)
+						if err != nil {
+							logs.Error("setting proxy server fail, %s", err.Error())
+							ErrorBoxAction(mainWindow, err.Error())
+						}
+
+						err = ProxyEnable()
+						if err != nil {
+							logs.Error("setting proxy enable fail, %s", err.Error())
+							ErrorBoxAction(mainWindow, err.Error())
+						}
+
+						stop.SetEnabled(true)
+					}
+				}()
 			},
 		},
 		PushButton{
-			//Enabled: false,
-			Text:     LangValue("stop"),
+			AssignTo:  &stop,
+			Enabled:   false,
+			Text:      LangValue("stop"),
 			OnClicked: func() {
-
+				stop.SetEnabled(false)
+				go func() {
+					err := ServerShutdown()
+					if err != nil {
+						ErrorBoxAction(mainWindow, err.Error())
+						stop.SetEnabled(true)
+					} else {
+						err = ProxyDisable()
+						if err != nil {
+							logs.Error("setting proxy disable fail, %s", err.Error())
+							ErrorBoxAction(mainWindow, err.Error())
+						}
+						start.SetEnabled(true)
+					}
+				}()
 			},
 		},
 	}

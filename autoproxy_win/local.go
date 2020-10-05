@@ -71,12 +71,12 @@ func TlsOptionsSet(idx int)  {
 	}
 }
 
-func PortOptionGet() float64 {
+func PortOptionGet() int {
 	value := DataIntValueGet("LocalPort")
 	if value == 0 {
 		value = 8080
 	}
-	return float64(value)
+	return int(value)
 }
 
 func PortOptionSet(value int)  {
@@ -92,7 +92,7 @@ func LocalAddressGet() string {
 		iface = "127.0.0.1"
 	}
 	return fmt.Sprintf("%s://%s:%d",
-		ProtcalOptionsGet(), iface, int(PortOptionGet()))
+		ProtcalOptionsGet(), iface, PortOptionGet())
 }
 
 var ifaceList []string
@@ -179,7 +179,7 @@ func localWidget() []Widget {
 		},
 		NumberEdit{
 			AssignTo: &port,
-			Value:    PortOptionGet(),
+			Value:    float64(PortOptionGet()),
 			ToolTipText: "1~65535",
 			MaxValue: 65535,
 			MinValue: 1,

@@ -9,19 +9,19 @@ import (
 	"net/http"
 )
 
-var forwardDefault Forward
-
-func HttpForward(r *http.Request) (*http.Response, error) {
-	return forwardDefault.http(r)
-}
-
-func HttpsForward(address string, r *http.Request) (net.Conn, error) {
-	return forwardDefault.https(address, r)
-}
-
 var HTTPS_CLIENT_CONNECT_FLAG  = []byte("HTTP/1.1 200 Connection Established\r\n\r\n")
 
-func HttpsRoundTripper(w http.ResponseWriter, r *http.Request) {
+func (acc *HttpAccess)HttpsForward(address string, r *http.Request) (net.Conn, error) {
+	forward := acc.forwardHandler(address, r)
+	return forward.https(address, r)
+}
+
+func (acc *HttpAccess)HttpForward(address string, r *http.Request) (*http.Response, error) {
+	forward := acc.forwardHandler(address, r)
+	return forward.http(r)
+}
+
+func (acc *HttpAccess)HttpsRoundTripper(w http.ResponseWriter, r *http.Request) {
 	hij, ok := w.(http.Hijacker)
 	if !ok {
 		logs.Error("httpserver does not support hijacking")
@@ -45,7 +45,7 @@ func HttpsRoundTripper(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	server, err := HttpsForward(address, r)
+	server, err := acc.HttpsForward(address, r)
 	if err != nil {
 		errstr := fmt.Sprintf("can't forward hostname %s", address)
 		logs.Error(errstr, err.Error())
@@ -60,12 +60,16 @@ func HttpsRoundTripper(w http.ResponseWriter, r *http.Request) {
 	}()
 }
 
-func HttpRoundTripper(r *http.Request) (*http.Response, error) {
+func (acc *HttpAccess)HttpRoundTripper(r *http.Request) (*http.Response, error) {
 	var bodyBytes []byte
 	if r.Body != nil {
-		bodyBytes, _ = ioutil.ReadAll(r.Body)
+		var err error
+		bodyBytes, err = ioutil.ReadAll(r.Body)
+		if err != nil {
+			logs.Error("read all fail, %s", err.Error())
+		}
 	}
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
-	return HttpForward(r)
+	return acc.HttpForward(Address(r.URL), r)
 }
 
