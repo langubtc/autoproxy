@@ -122,7 +122,7 @@ func (c *connectCopy)timer()  {
 	}
 }
 
-func ConnectCopyWithTimeout(in net.Conn, out net.Conn, tmout int)  {
+func ConnectCopyWithTimeout(in net.Conn, out net.Conn, tmout int) uint64 {
 	c := new(connectCopy)
 	c.timeout = time.Duration(tmout) * time.Second
 	c.in = in
@@ -136,6 +136,8 @@ func ConnectCopyWithTimeout(in net.Conn, out net.Conn, tmout int)  {
 	c.Wait()
 
 	logs.Info("connect %s <-> %s close", in.RemoteAddr(), out.RemoteAddr())
+
+	return c.flow
 }
 
 func iocopy(in io.Reader, out io.Writer, done *sync.WaitGroup)  {
@@ -156,16 +158,4 @@ func iocopy(in io.Reader, out io.Writer, done *sync.WaitGroup)  {
 			break
 		}
 	}
-}
-
-func ConnectCopy(in io.ReadWriteCloser, out io.ReadWriteCloser)  {
-	wait := new(sync.WaitGroup)
-
-	wait.Add(2)
-	go iocopy(in, out, wait)
-	go iocopy(out, in, wait)
-	wait.Wait()
-
-	in.Close()
-	out.Close()
 }

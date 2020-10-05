@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"sync/atomic"
 )
 
 var HTTPS_CLIENT_CONNECT_FLAG  = []byte("HTTP/1.1 200 Connection Established\r\n\r\n")
@@ -56,7 +57,8 @@ func (acc *HttpAccess)HttpsRoundTripper(w http.ResponseWriter, r *http.Request) 
 	}
 
 	go func() {
-		ConnectCopyWithTimeout(client, server, 60)
+		cnt := ConnectCopyWithTimeout(client, server, 60)
+		atomic.AddUint64(&acc.flowsize, cnt)
 	}()
 }
 
@@ -68,6 +70,7 @@ func (acc *HttpAccess)HttpRoundTripper(r *http.Request) (*http.Response, error) 
 		if err != nil {
 			logs.Error("read all fail, %s", err.Error())
 		}
+		atomic.AddUint64(&acc.flowsize, uint64(len(bodyBytes)))
 	}
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 	return acc.HttpForward(Address(r.URL), r)

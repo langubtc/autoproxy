@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -24,11 +25,15 @@ type HttpAccess struct {
 	httpserver *http.Server
 	sync.WaitGroup
 
+	requset  uint64
+	flowsize uint64
+
 	authHandler func(auth *AuthInfo) bool
 	forwardHandler func(address string, r *http.Request) Forward
 }
 
 type Access interface {
+	Stat() (uint64,uint64)
 	Shutdown() error
 	AuthHandlerSet(func(*AuthInfo) bool)
 	ForwardHandlerSet(func(address string, r *http.Request) Forward)
@@ -81,6 +86,10 @@ func (acc *HttpAccess)AuthHttp(r *http.Request) bool {
 	return acc.authHandler(AuthInfoParse(r))
 }
 
+func (acc *HttpAccess)Stat() (uint64,uint64) {
+	return acc.requset, acc.flowsize
+}
+
 func (acc *HttpAccess)Shutdown() error {
 	context, cencel := context.WithTimeout(context.Background(), 60)
 	err := acc.httpserver.Shutdown(context)
@@ -102,6 +111,8 @@ func DebugReqeust(r *http.Request) {
 
 func (acc *HttpAccess)ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	DebugReqeust(r)
+
+	atomic.AddUint64(&acc.requset, 1)
 
 	if acc.AuthHttp(r) == false {
 		AuthFailHandler(w, r)
@@ -141,10 +152,12 @@ func (acc *HttpAccess)ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	copyHeaders(w.Header(), rsp.Header)
 	w.WriteHeader(rsp.StatusCode)
 
-	_, err = io.Copy(w, rsp.Body)
+	cnt, err := io.Copy(w, rsp.Body)
 	if err != nil {
 		logs.Warn("io copy fail", err.Error())
 	}
+
+	atomic.AddUint64(&acc.flowsize, uint64(cnt))
 }
 
 func copyHeaders(dst, src http.Header) {

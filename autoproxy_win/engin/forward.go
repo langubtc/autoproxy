@@ -14,15 +14,17 @@ type Forward interface {
 }
 
 type defaultForward struct {
-	sync.RWMutex
+	sync.WaitGroup
 
-	tmout int
-	address map[string]int
-	trans *http.Transport
+	tmout  int
+	stop    chan struct{}
+	trans  *http.Transport
 }
 
 func (d *defaultForward)Close() error {
+	d.stop <- struct{}{}
 	d.trans.CloseIdleConnections()
+	d.Wait()
 	return nil
 }
 
@@ -35,9 +37,24 @@ func (d *defaultForward)https(address string, r *http.Request) (net.Conn, error)
 }
 
 func NewDefault(timeout int) (Forward, error) {
-	return &defaultForward{
+	forward := &defaultForward{
 		trans: newTransport(timeout, nil),
 		tmout: timeout,
-		address: make(map[string]int, 0),
-	},nil
+		stop: make(chan struct{},1),
+	}
+	forward.Add(1)
+	go func() {
+		ticker := time.NewTicker(time.Minute)
+		defer ticker.Stop()
+		defer forward.Done()
+		for  {
+			select {
+			case <- ticker.C:
+				forward.trans.CloseIdleConnections()
+			case <- forward.stop:
+				return
+			}
+		}
+	}()
+	return forward,nil
 }
