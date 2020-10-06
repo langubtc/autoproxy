@@ -2,9 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/astaxie/beego/logs"
+	"github.com/easymesh/autoproxy/autoproxy_win/engin"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
+	"net/http"
+	"net/url"
+	"strings"
 )
 
 type RemoteItem struct {
@@ -105,10 +110,70 @@ func RemoteUpdate(item RemoteItem) {
 
 var curRemoteItem RemoteItem
 
+func TestEngin(testhttps string, item *RemoteItem) error {
+	if !engin.IsConnect(item.Address, 5) {
+		return fmt.Errorf("remote address connnect %s fail", item.Address)
+	}
+
+	urls, err := url.Parse(testhttps)
+	if err != nil {
+		logs.Error("%s raw url parse fail, %s", testhttps, err.Error())
+		return err
+	}
+
+	var auth * engin.AuthInfo
+	if item.Auth {
+		auth = &engin.AuthInfo{
+			User: item.User,
+			Token: item.Password,
+		}
+	}
+
+	var tls bool
+	if strings.ToLower(item.Protocal) == "https" {
+		tls = true
+	}
+
+	forward, err := engin.NewHttpsProtcal(item.Address, 10, auth, tls)
+	if err != nil {
+		logs.Error("new remote http proxy fail, %s", err.Error())
+		return err
+	}
+
+	defer forward.Close()
+
+	request, err := http.NewRequest("GET", testhttps, nil)
+	if err != nil {
+		logs.Error("%s raw url parse fail, %s", testhttps, err.Error())
+		return err
+	}
+
+	if strings.ToLower(urls.Scheme) == "https" {
+		conn, err := forward.Https(engin.Address(urls), request)
+		if err != nil {
+			logs.Error("remote server %s forward %s fail, %s",
+				item.Address, urls.RawPath, err.Error())
+			return err
+		}
+		conn.Close()
+	} else {
+		rsp, err := forward.Http(request)
+		if err != nil {
+			logs.Error("remote server %s forward %s fail, %s",
+				item.Address, urls.RawPath, err.Error())
+			return err
+		}
+		rsp.Body.Close()
+	}
+
+	return nil
+}
+
 func remoteWidget() []Widget {
 	var remote, protocal *walk.ComboBox
 	var auth *walk.RadioButton
 	var user, passwd, address, testurl *walk.LineEdit
+	var testbut *walk.PushButton
 
 	curRemoteItem = RemoteGet()
 
@@ -209,9 +274,17 @@ func remoteWidget() []Widget {
 		},
 
 		PushButton{
+			AssignTo: &testbut,
 			Text: LangValue("test"),
 			OnClicked: func() {
-
+				testbut.SetEnabled(false)
+				go func() {
+					err := TestEngin(testurl.Text(), &curRemoteItem)
+					if err != nil {
+						ErrorBoxAction(remoteDlg, err.Error())
+					}
+					testbut.SetEnabled(true)
+				}()
 			},
 		},
 
@@ -225,12 +298,13 @@ func remoteWidget() []Widget {
 	}
 }
 
+var remoteDlg *walk.Dialog
+
 func RemoteServer()  {
-	var dlg *walk.Dialog
 	var acceptPB, cancelPB *walk.PushButton
 
 	_, err := Dialog{
-		AssignTo: &dlg,
+		AssignTo: &remoteDlg,
 		Title: LangValue("remoteproxy"),
 		Icon: walk.IconShield(),
 		DefaultButton: &acceptPB,
@@ -252,24 +326,24 @@ func RemoteServer()  {
 						OnClicked: func() {
 							if curRemoteItem.Auth {
 								if curRemoteItem.User == "" || curRemoteItem.Password == "" {
-									ErrorBoxAction(dlg, LangValue("inputuserandpasswd"))
+									ErrorBoxAction(remoteDlg, LangValue("inputuserandpasswd"))
 									return
 								}
 							}
 							if curRemoteItem.Name == "" || curRemoteItem.Address == "" {
-								ErrorBoxAction(dlg, LangValue("inputnameandaddress"))
+								ErrorBoxAction(remoteDlg, LangValue("inputnameandaddress"))
 								return
 							}
 							RemoteUpdate(curRemoteItem)
 							ConsoleRemoteUpdate()
-							dlg.Accept()
+							remoteDlg.Accept()
 						},
 					},
 					PushButton{
 						AssignTo:  &cancelPB,
 						Text:      LangValue("cancel"),
 						OnClicked: func() {
-							dlg.Cancel()
+							remoteDlg.Cancel()
 						},
 					},
 				},

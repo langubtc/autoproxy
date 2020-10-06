@@ -80,6 +80,26 @@ func ConsoleWidget() []Widget {
 	}
 }
 
+func InternalSettingEnable() error {
+	address := fmt.Sprintf("%s:%d",
+		IfaceOptions()[LocalIfaceOptionsIdx()],
+		PortOptionGet())
+
+	err := ProxyServer(address)
+	if err != nil {
+		logs.Error("setting proxy server fail, %s", err.Error())
+		return err
+	}
+
+	err = ProxyEnable()
+	if err != nil {
+		logs.Error("setting proxy enable fail, %s", err.Error())
+		return err
+	}
+
+	return nil
+}
+
 func ButtonWight() []Widget {
 	var start *walk.PushButton
 	var stop *walk.PushButton
@@ -97,23 +117,12 @@ func ButtonWight() []Widget {
 						ErrorBoxAction(mainWindow, err.Error())
 						start.SetEnabled(true)
 					} else {
-						address := fmt.Sprintf("%s:%d",
-							IfaceOptions()[LocalIfaceOptionsIdx()],
-							PortOptionGet())
-
-						err = ProxyServer(address)
+						err = InternalSettingEnable()
 						if err != nil {
-							logs.Error("setting proxy server fail, %s", err.Error())
 							ErrorBoxAction(mainWindow, err.Error())
 						}
 
-						err = ProxyEnable()
-						if err != nil {
-							logs.Error("setting proxy enable fail, %s", err.Error())
-							ErrorBoxAction(mainWindow, err.Error())
-						}
-
-						StatRunningStatus(1)
+						StatRunningStatus(true)
 						stop.SetEnabled(true)
 					}
 				}()
@@ -136,7 +145,7 @@ func ButtonWight() []Widget {
 							logs.Error("setting proxy disable fail, %s", err.Error())
 							ErrorBoxAction(mainWindow, err.Error())
 						}
-						StatRunningStatus(0)
+						StatRunningStatus(false)
 						start.SetEnabled(true)
 					}
 				}()

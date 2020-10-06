@@ -44,7 +44,7 @@ func ServerStart() error {
 
 	logs.Info("server start %s", address)
 
-	access, err = engin.NewHttpsAccess(address, 60, AuthSwitchGet())
+	access, err = engin.NewHttpsAccess(address, 60, false)
 	if err != nil {
 		return err
 	}
@@ -58,6 +58,13 @@ func ServerStart() error {
 
 	logs.Info("server start %s success", address)
 	return nil
+}
+
+func ServerRunning() bool {
+	if access == nil {
+		return false
+	}
+	return true
 }
 
 func ServerShutdown() error {

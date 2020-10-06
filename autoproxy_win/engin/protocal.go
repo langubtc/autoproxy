@@ -14,12 +14,12 @@ var HTTPS_CLIENT_CONNECT_FLAG  = []byte("HTTP/1.1 200 Connection Established\r\n
 
 func (acc *HttpAccess)HttpsForward(address string, r *http.Request) (net.Conn, error) {
 	forward := acc.forwardHandler(address, r)
-	return forward.https(address, r)
+	return forward.Https(address, r)
 }
 
 func (acc *HttpAccess)HttpForward(address string, r *http.Request) (*http.Response, error) {
 	forward := acc.forwardHandler(address, r)
-	return forward.http(r)
+	return forward.Http(r)
 }
 
 func (acc *HttpAccess)HttpsRoundTripper(w http.ResponseWriter, r *http.Request) {
@@ -57,8 +57,9 @@ func (acc *HttpAccess)HttpsRoundTripper(w http.ResponseWriter, r *http.Request) 
 	}
 
 	go func() {
-		cnt := ConnectCopyWithTimeout(client, server, 60)
-		atomic.AddUint64(&acc.flowsize, cnt)
+		ConnectCopyWithTimeout(client, server, 60, func(cnt uint64) {
+			atomic.AddUint64(&acc.flowsize, cnt)
+		})
 	}()
 }
 

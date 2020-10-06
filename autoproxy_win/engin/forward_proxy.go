@@ -60,7 +60,7 @@ func httpsProxyAuthAdd(r *http.Request, auth *AuthInfo)  {
 	r.Header.Add("Proxy-Authorization", basic)
 }
 
-func (h *httpsProtocal)http(r *http.Request) (*http.Response, error) {
+func (h *httpsProtocal)Http(r *http.Request) (*http.Response, error) {
 	rsp, err := h.trans.RoundTrip(r)
 	if err != nil {
 		errStr := fmt.Sprintf("http roundtrip %s %s fail!", r.Host, r.RemoteAddr)
@@ -69,7 +69,7 @@ func (h *httpsProtocal)http(r *http.Request) (*http.Response, error) {
 	return rsp, err
 }
 
-func (h *httpsProtocal)https(address string, r *http.Request) (net.Conn, error) {
+func (h *httpsProtocal)Https(address string, r *http.Request) (net.Conn, error) {
 	server, err := net.DialTimeout("tcp", h.address, h.timeout)
 	if err != nil {
 		return nil, fmt.Errorf("connect to proxy %s failed, err=%s",
@@ -80,28 +80,25 @@ func (h *httpsProtocal)https(address string, r *http.Request) (net.Conn, error) 
 		server = tls.Client(server, h.config)
 	}
 
-	defer func() {
-		if err != nil {
-			server.Close()
-		}
-	}()
-
 	r.Header.Del("Proxy-Authenticate")
 	httpsProxyAuthAdd(r, h.auth)
 
 	err = WriteFull(server, httpsProxyRequest(r) )
 	if err != nil {
+		server.Close()
 		return nil, fmt.Errorf("write to proxy failed! %s", err.Error())
 	}
 
 	var readbuf [1024]byte
 	cnt, err := server.Read(readbuf[:])
 	if err != nil {
+		server.Close()
 		return nil, fmt.Errorf("read from remote proxy failed! %s",err.Error())
 	}
 
 	if -1 == strings.Index(string(readbuf[:cnt]),"200") {
-		logs.Warn("read from remote proxy fail", string(readbuf[:cnt]))
+		server.Close()
+		return nil, fmt.Errorf("read from remote proxy fail", string(readbuf[:cnt]))
 	}
 
 	return server, nil

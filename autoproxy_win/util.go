@@ -93,9 +93,9 @@ func ByteViewLite(size int64) string {
 	if size < 1024 {
 		return fmt.Sprintf("%db", size)
 	} else if size < (1024 * 1024) {
-		return fmt.Sprintf("%.1fkb", float64(size)/float64(1024))
+		return fmt.Sprintf("%.1fKb", float64(size)/float64(1024))
 	} else {
-		return fmt.Sprintf("%.1fmb", float64(size)/float64(1024*1024))
+		return fmt.Sprintf("%.1fMb", float64(size)/float64(1024*1024))
 	}
 }
 

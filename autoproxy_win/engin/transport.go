@@ -20,6 +20,6 @@ func newTransport(timeout int, tlscfg *tls.Config) *http.Transport {
 		MaxIdleConns:          1000,
 		IdleConnTimeout:       3*tmout,
 		TLSHandshakeTimeout:   tmout,
-		ExpectContinueTimeout: time.Second }
+		ExpectContinueTimeout: 5*time.Second }
 }
 

@@ -9,8 +9,8 @@ import (
 
 type Forward interface {
 	Close() error
-	http(r *http.Request) (*http.Response, error)
-	https(address string, r *http.Request) (net.Conn, error)
+	Http(r *http.Request) (*http.Response, error)
+	Https(address string, r *http.Request) (net.Conn, error)
 }
 
 type defaultForward struct {
@@ -28,11 +28,11 @@ func (d *defaultForward)Close() error {
 	return nil
 }
 
-func (d *defaultForward)http(r *http.Request) (*http.Response, error) {
+func (d *defaultForward)Http(r *http.Request) (*http.Response, error) {
 	return d.trans.RoundTrip(r)
 }
 
-func (d *defaultForward)https(address string, r *http.Request) (net.Conn, error) {
+func (d *defaultForward)Https(address string, r *http.Request) (net.Conn, error) {
 	return net.DialTimeout("tcp", address, time.Second * time.Duration(d.tmout) )
 }
 

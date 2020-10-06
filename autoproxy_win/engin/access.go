@@ -16,7 +16,7 @@ import (
 )
 
 func PublicFailDelay() {
-	time.Sleep(time.Second * 5) // 防DOS攻击延时
+	time.Sleep(time.Second) // 防DOS攻击延时
 }
 
 type HttpAccess struct {
@@ -102,11 +102,11 @@ func (acc *HttpAccess)Stat() (uint64,uint64) {
 }
 
 func (acc *HttpAccess)Shutdown() error {
-	context, cencel := context.WithTimeout(context.Background(), 60)
+	context, cencel := context.WithTimeout(context.Background(), 15 * time.Second)
 	err := acc.httpserver.Shutdown(context)
 	cencel()
 	if err != nil {
-		logs.Error("shut down fail, %s", err.Error())
+		logs.Error("http access ready to shut down fail, %s", err.Error())
 	}
 	acc.Wait()
 	return err

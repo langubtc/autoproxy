@@ -16,17 +16,14 @@ var TotalFlowSize uint64
 var TotalReqCnt   uint64
 var RealTimeFlow  uint64
 
-var LastUpdate     time.Time
+var LastUpdate time.Time
 
 func StatUpdate(requst uint64, flowsize uint64)  {
-	if requst == 0 || flowsize == 0 {
-		return
-	}
 	now := time.Now()
 
 	TotalReqCnt += requst
 	TotalFlowSize += flowsize
-	RealTimeFlow = flowsize / uint64(now.Sub(LastUpdate).Seconds())
+	RealTimeFlow = uint64(float64(flowsize) / now.Sub(LastUpdate).Seconds())
 
 	LastUpdate = now
 	requestCount.SetText(requestShow())
@@ -70,20 +67,11 @@ func realTimeShow() string {
 		ByteViewLite(int64(RealTimeFlow * 8)))
 }
 
-func StatRunningStatus(idx int)  {
+func StatRunningStatus(enable bool)  {
 	var image *walk.Icon
-	switch idx {
-	case 0:
-		image = ICON_Network_Disable
-	case 1:
-		image = ICON_Network_LOW
-	case 2:
-		image = ICON_Network_MID
-	case 3:
-		image = ICON_Network_High
-	case 4:
-		image = ICON_Network_Full
-	default:
+	if enable {
+		image = ICON_Network_Enable
+	} else {
 		image = ICON_Network_Disable
 	}
 	runningStatus.SetImage(image)

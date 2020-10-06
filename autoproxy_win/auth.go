@@ -42,6 +42,7 @@ func AuthInit() error {
 			User: v.User, Password: v.Password,
 		}
 	}
+
 	return nil
 }
 
@@ -98,6 +99,8 @@ func AuthCheck(user string, passwd string) bool {
 	authCtrl.RLock()
 	defer authCtrl.RUnlock()
 
+	logs.Info("auth check : %s %s", user, passwd)
+
 	userInfo, _ := authCtrl.cache[user]
 	if userInfo == nil {
 		return false
@@ -110,6 +113,14 @@ func AuthCheck(user string, passwd string) bool {
 
 func AuthGet() []AuthInfo {
 	return authCtrl.Items
+}
+
+func AuthRandomUser() string {
+	return "U"+GetUser(5)
+}
+
+func AuthRandomPasswd() string {
+	return GetToken(16)
 }
 
 func AuthAdd()  {
@@ -140,7 +151,7 @@ func AuthAdd()  {
 					PushButton{
 						Text:      LangValue("randomgen"),
 						OnClicked: func() {
-							user.SetText("U"+GetUser(5))
+							user.SetText(AuthRandomUser())
 						},
 					},
 					Label{
@@ -153,7 +164,7 @@ func AuthAdd()  {
 					PushButton{
 						Text:      LangValue("randomgen"),
 						OnClicked: func() {
-							passwd.SetText(GetToken(16))
+							passwd.SetText(AuthRandomPasswd())
 						},
 					},
 				},
