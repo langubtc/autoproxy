@@ -231,10 +231,8 @@ func InternetSetting()  {
 							if err != nil {
 								ErrorBoxAction(dlg, err.Error())
 							} else {
-								go func() {
-									InfoBoxAction(dlg, LangValue("settingsuccess"))
-									dlg.Accept()
-								}()
+								InfoBoxAction(dlg, LangValue("settingsuccess"))
+								dlg.Accept()
 							}
 						},
 					},
