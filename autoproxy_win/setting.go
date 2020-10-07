@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"golang.org/x/sys/windows/registry"
 	"strings"
 	"github.com/astaxie/beego/logs"
@@ -156,12 +157,21 @@ func InternetSettingWidget() []Widget {
 			AssignTo: &proxyServer,
 			Text: proxysetting.Server,
 		},
+		PushButton{
+			Text:     LangValue("syncaddress"),
+			OnClicked: func() {
+				proxyServer.SetText(ProxyServerGet())
+			},
+		},
 		Label{
 			Text: LangValue("override") + ":",
 		},
 		TextEdit{
 			AssignTo: &override,
 			Text: StringList(proxysetting.Override),
+		},
+		HSpacer{
+
 		},
 		Label{
 			Text: LangValue("usingproxy") + ":",
@@ -176,7 +186,18 @@ func InternetSettingWidget() []Widget {
 				proxysetting.Enable = !proxysetting.Enable
 			},
 		},
+		HSpacer{
+
+		},
 	}
+}
+
+func ProxyServerGet() string {
+	ifaceAddr := IfaceOptions()[LocalIfaceOptionsIdx()]
+	if ifaceAddr == "0.0.0.0" {
+		ifaceAddr = "127.0.0.1"
+	}
+	return fmt.Sprintf("%s:%d", ifaceAddr, PortOptionGet())
 }
 
 func InternetSetting()  {
@@ -189,12 +210,12 @@ func InternetSetting()  {
 		Icon: walk.IconShield(),
 		DefaultButton: &acceptPB,
 		CancelButton: &cancelPB,
-		Size: Size{250, 300},
-		MinSize: Size{250, 300},
+		Size: Size{400, 300},
+		MinSize: Size{400, 300},
 		Layout:  VBox{},
 		Children: []Widget{
 			Composite{
-				Layout: Grid{Columns: 2},
+				Layout: Grid{Columns: 3},
 				Children: InternetSettingWidget(),
 			},
 			Composite{
@@ -208,7 +229,10 @@ func InternetSetting()  {
 							if err != nil {
 								ErrorBoxAction(dlg, err.Error())
 							} else {
-								dlg.Accept()
+								go func() {
+									InfoBoxAction(dlg, LangValue("settingsuccess"))
+									dlg.Accept()
+								}()
 							}
 						},
 					},

@@ -9,7 +9,7 @@ import (
 
 var mainWindow *walk.MainWindow
 
-var mainWindowWidth = 300
+var mainWindowWidth = 430
 var mainWindowHeight = 350
 
 func waitWindows()  {
@@ -62,11 +62,11 @@ func mainWindows() {
 				Children: StatWidget(),
 			},
 			Composite{
-				Layout: Grid{Columns: 2, MarginsZero: true},
+				Layout: Grid{Columns: 2, Margins: Margins{Left: 50}},
 				Children: ConsoleWidget(),
 			},
 			Composite{
-				Layout: Grid{Columns: 2, MarginsZero: true},
+				Layout: Grid{Columns: 2},
 				Children: ButtonWight(),
 			},
 		},
@@ -84,7 +84,6 @@ func mainWindows() {
 func CloseWindows()  {
 	if ServerRunning() {
 		ServerShutdown()
-		ProxyDisable()
 	}
 	MainWindowsClose()
 	NotifyExit()

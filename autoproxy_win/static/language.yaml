@@ -22,10 +22,18 @@
   value:
   - 确认
   - OK
+- key: settingsuccess
+  value:
+  - Internet代理设置成功
+  - Internet Setting Proxy Setup Successful
 - key: find
   value:
   - 查找
   - Find
+- key: syncaddress
+  value:
+  - 同步服务地址
+  - Synchronous Proxy Server Address
 - key: nochoiceobject
   value:
   - 未选中删除对象

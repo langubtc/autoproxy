@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"github.com/astaxie/beego/logs"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
 	"sync"
@@ -88,25 +86,6 @@ func ConsoleWidget() []Widget {
 	}
 }
 
-func InternalSettingEnable() error {
-	ifaceAddr := IfaceOptions()[LocalIfaceOptionsIdx()]
-	if ifaceAddr == "0.0.0.0" {
-		ifaceAddr = "127.0.0.1"
-	}
-	address := fmt.Sprintf("%s:%d", ifaceAddr, PortOptionGet())
-	err := ProxyServer(address)
-	if err != nil {
-		logs.Error("setting proxy server fail, %s", err.Error())
-		return err
-	}
-	err = ProxyEnable()
-	if err != nil {
-		logs.Error("setting proxy enable fail, %s", err.Error())
-		return err
-	}
-	return nil
-}
-
 func ButtonWight() []Widget {
 	var start *walk.PushButton
 	var stop *walk.PushButton
@@ -132,10 +111,6 @@ func ButtonWight() []Widget {
 					start.SetEnabled(true)
 					ConsoleEnable(true)
 				} else {
-					err = InternalSettingEnable()
-					if err != nil {
-						ErrorBoxAction(mainWindow, err.Error())
-					}
 					StatRunningStatus(true)
 					stop.SetEnabled(true)
 				}
@@ -160,10 +135,6 @@ func ButtonWight() []Widget {
 						start.SetEnabled(true)
 						ConsoleEnable(true)
 					} else {
-						err = InternalSettingEnable()
-						if err != nil {
-							ErrorBoxAction(mainWindow, err.Error())
-						}
 						StatRunningStatus(true)
 						stop.SetEnabled(true)
 					}
@@ -185,11 +156,6 @@ func ButtonWight() []Widget {
 						ErrorBoxAction(mainWindow, err.Error())
 						stop.SetEnabled(true)
 					} else {
-						err = ProxyDisable()
-						if err != nil {
-							logs.Error("setting proxy disable fail, %s", err.Error())
-							ErrorBoxAction(mainWindow, err.Error())
-						}
 						StatRunningStatus(false)
 						start.SetEnabled(true)
 						ConsoleEnable(true)
