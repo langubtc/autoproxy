@@ -22,6 +22,26 @@
   value:
   - 确认
   - OK
+- key: find
+  value:
+  - 查找
+  - Find
+- key: nochoiceobject
+  value:
+  - 未选中删除对象
+  - Delete object not selected
+- key: findkey
+  value:
+  - 关键字
+  - Find Key
+- key: nofindkey
+  value:
+  - 请输入查找关键字
+  - Please enter search keywords
+- key: inputdomain
+  value:
+  - 请输入匹配域名
+  - Please enter the matching domain name
 - key: cancel
   value:
   - 取消
@@ -122,6 +142,10 @@
   value:
   - 端口
   - Port
+- key: version
+  value:
+  - 版本
+  - Version
 - key: mode
   value:
   - 代理模式
@@ -238,3 +262,19 @@
   value:
   - 跟随服务
   - Follow Service
+- key: testpass
+  value:
+  - 测试通过
+  - Test Pass
+- key: delay
+  value:
+  - 耗时
+  - Delay
+- key: forwarddomain
+  value:
+  - 转发域名
+  - Forward Domain
+- key: domain
+  value:
+  - 域名
+  - Domain

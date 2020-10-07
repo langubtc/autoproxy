@@ -33,6 +33,7 @@ func AuthInit() error {
 		logs.Error("no auth json fail")
 		return nil
 	}
+
 	err = json.Unmarshal(body, &authCtrl.Items)
 	if err != nil {
 		return err

@@ -30,6 +30,7 @@ func boxAction(from walk.Form, title string, icon *walk.Icon, message string, ti
 		CancelButton: &cancelPB,
 		Size: Size{150, 150},
 		MinSize: Size{150, 150},
+		MaxSize: Size{200, 300},
 		Layout:  VBox{},
 		Children: []Widget{
 			Label{

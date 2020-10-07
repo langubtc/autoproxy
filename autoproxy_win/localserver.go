@@ -5,6 +5,8 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/easymesh/autoproxy/autoproxy_win/engin"
 	"net/http"
+	"strings"
+	"sync"
 )
 
 var access engin.Access
@@ -17,24 +19,107 @@ func StatGet() (uint64, uint64) {
 	return 0,0
 }
 
+/*
 func AuthSwitch(auth *engin.AuthInfo) bool {
 	if auth == nil {
 		return false
 	}
 	return AuthCheck(auth.User, auth.Token)
-}
+}*/
 
-var LocalForward engin.Forward
+var LocalForward  engin.Forward
+var RemoteForward engin.Forward
 
-func ForwardFunc(address string, r *http.Request) engin.Forward {
+var mutex sync.Mutex
+
+func LocalForwardFunc(address string, r *http.Request) engin.Forward {
 	return LocalForward
 }
 
+func ProxyForwardFunc(address string, r *http.Request) engin.Forward {
+	return RemoteForward
+}
+
+func AutoForwardFunc(address string, r *http.Request) engin.Forward {
+	if RouteCheck(address) {
+		logs.Info("%s auto forward to remote proxy", address)
+		return RemoteForward
+	}
+	return LocalForward
+}
+
+func RemoteForwardUpdate() error {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	return remoteUpdate()
+}
+
+func remoteUpdate() error {
+	remote := RemoteList()[RemoteIndexGet()]
+	logs.Info("remote swtich config : %v", remote)
+
+	var tlsEnable bool
+	if strings.ToLower(remote.Protocal) == "https" {
+		tlsEnable = true
+	}
+
+	var auth *engin.AuthInfo
+	if remote.Auth {
+		auth = &engin.AuthInfo{User: remote.User, Token: remote.Password}
+	}
+
+	forward, err := engin.NewHttpsProtcal(remote.Address, 60, auth, tlsEnable )
+	if err != nil {
+		logs.Error(err.Error())
+		return err
+	}
+
+	logs.Info("remote swtich to %s success", remote.Name )
+	if RemoteForward != nil {
+		RemoteForward.Close()
+	}
+	RemoteForward = forward
+	return nil
+}
+
+func modeUpdate()  {
+	acc := access
+	if acc == nil {
+		logs.Warn("server has been stop, mode update disable")
+		return
+	}
+
+	mode := ModeOptionGet()
+	logs.Info("mode switch to %s", mode)
+
+	switch mode {
+	case "auto":
+		acc.ForwardHandlerSet(AutoForwardFunc)
+	case "proxy" :
+		acc.ForwardHandlerSet(ProxyForwardFunc)
+	case "local":
+		acc.ForwardHandlerSet(LocalForwardFunc)
+	}
+
+	logs.Info("server mode switch to %s success", mode)
+}
+
+func ModeUpdate() {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	modeUpdate()
+}
+
 func ServerStart() error {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	var err error
 
 	if access != nil {
-		logs.Error("server has beed start")
+		logs.Error("server has been start")
 		return fmt.Errorf("server has been start")
 	}
 
@@ -46,21 +131,27 @@ func ServerStart() error {
 
 	access, err = engin.NewHttpsAccess(address, 60, false)
 	if err != nil {
+		logs.Error(err.Error())
 		return err
 	}
 
-	if AuthSwitchGet() {
-		access.AuthHandlerSet(AuthSwitch)
-	}
-	access.ForwardHandlerSet(ForwardFunc)
-
 	LocalForward, _ = engin.NewDefault(60)
+
+	err = remoteUpdate()
+	if err != nil {
+		return err
+	}
+
+	modeUpdate()
 
 	logs.Info("server start %s success", address)
 	return nil
 }
 
 func ServerRunning() bool {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	if access == nil {
 		return false
 	}
@@ -68,6 +159,9 @@ func ServerRunning() bool {
 }
 
 func ServerShutdown() error {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	if access == nil {
 		return fmt.Errorf("server has been stop")
 	}

@@ -42,8 +42,9 @@ func AboutAction() {
 				Text: aboutsCtx,
 				MinSize: Size{Width: 200, Height: 250},
 			},
-			ImageView{
-
+			Label{
+				Text: LangValue("version") + ": "+ VersionGet(),
+				TextAlignment: AlignCenter,
 			},
 			Composite{
 				Layout: VBox{},

@@ -40,5 +40,15 @@ func main()  {
 		logs.Error(err.Error())
 		return
 	}
+	err = DomainInit()
+	if err != nil {
+		logs.Error(err.Error())
+		return
+	}
+	err = RouteInit()
+	if err != nil {
+		logs.Error(err.Error())
+		return
+	}
 	mainWindows()
 }

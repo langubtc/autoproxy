@@ -7,19 +7,19 @@ import (
 	. "github.com/lxn/walk/declarative"
 )
 
-var consoleLocalAddress *walk.Label
-var consoleAuth *walk.RadioButton
+var consoleIface *walk.ComboBox
 var consoleRemoteProxy *walk.ComboBox
 var consoleMode *walk.ComboBox
+var consolePort *walk.NumberEdit
 
-func ConsoleUpdate()  {
-	consoleLocalAddress.SetText(LocalAddressGet())
-	consoleAuth.SetChecked(AuthSwitchGet())
-	consoleMode.SetCurrentIndex(ModeOptionsIdx())
+func ConsoleEnable(enable bool)  {
+	consoleIface.SetEnabled(enable)
+	consolePort.SetEnabled(enable)
 }
 
 func ConsoleRemoteUpdate()  {
-	consoleRemoteProxy.SetModel(RemoteList())
+	consoleRemoteProxy.SetModel(RemoteOptions())
+	consoleRemoteProxy.SetCurrentIndex(RemoteIndexGet())
 }
 
 func ConsoleWidget() []Widget {
@@ -27,21 +27,25 @@ func ConsoleWidget() []Widget {
 		Label{
 			Text: LangValue("localaddress") + ":",
 		},
-		Label {
-			AssignTo: &consoleLocalAddress,
-			Text: LocalAddressGet(),
+		ComboBox{
+			AssignTo: &consoleIface,
+			CurrentIndex:  LocalIfaceOptionsIdx(),
+			Model:         IfaceOptions(),
+			OnCurrentIndexChanged: func() {
+				LocalIfaceOptionsSet(consoleIface.Text())
+			},
 		},
 		Label{
-			Text: LangValue("whetherauth") + ":",
+			Text: LangValue("port") + ":",
 		},
-		RadioButton{
-			AssignTo: &consoleAuth,
-			OnBoundsChanged: func() {
-				consoleAuth.SetChecked(AuthSwitchGet())
-			},
-			OnClicked: func() {
-				consoleAuth.SetChecked(!AuthSwitchGet())
-				AuthSwitchSet(!AuthSwitchGet())
+		NumberEdit{
+			AssignTo: &consolePort,
+			Value:    float64(PortOptionGet()),
+			ToolTipText: "1~65535",
+			MaxValue: 65535,
+			MinValue: 1,
+			OnValueChanged: func() {
+				PortOptionSet(int(consolePort.Value()))
 			},
 		},
 		Label{
@@ -55,11 +59,9 @@ func ConsoleWidget() []Widget {
 			Model:         ModeOptions(),
 			OnCurrentIndexChanged: func() {
 				ModeOptionsSet(consoleMode.CurrentIndex())
-				if ProtcalOptionsGet() == "local" {
-					consoleRemoteProxy.SetEnabled(false)
-				} else {
-					consoleRemoteProxy.SetEnabled(true)
-				}
+				go func() {
+					ModeUpdate()
+				}()
 			},
 		},
 		Label{
@@ -67,36 +69,39 @@ func ConsoleWidget() []Widget {
 		},
 		ComboBox{
 			AssignTo:      &consoleRemoteProxy,
-			CurrentIndex:  0,
-			OnBoundsChanged: func() {
-				if ProtcalOptionsGet() == "local" {
-					consoleRemoteProxy.SetEnabled(false)
-				} else {
+			CurrentIndex:  RemoteIndexGet(),
+			OnCurrentIndexChanged: func() {
+				consoleRemoteProxy.SetEnabled(false)
+				RemoteIndexSet(consoleRemoteProxy.Text())
+				go func() {
+					err := RemoteForwardUpdate()
+					if err != nil {
+						ErrorBoxAction(mainWindow, err.Error())
+					}
 					consoleRemoteProxy.SetEnabled(true)
-				}
+				}()
 			},
-			Model:         RemoteList(),
+			Model:         RemoteOptions(),
 		},
 	}
 }
 
 func InternalSettingEnable() error {
-	address := fmt.Sprintf("%s:%d",
-		IfaceOptions()[LocalIfaceOptionsIdx()],
-		PortOptionGet())
-
+	ifaceAddr := IfaceOptions()[LocalIfaceOptionsIdx()]
+	if ifaceAddr == "0.0.0.0" {
+		ifaceAddr = "127.0.0.1"
+	}
+	address := fmt.Sprintf("%s:%d", ifaceAddr, PortOptionGet())
 	err := ProxyServer(address)
 	if err != nil {
 		logs.Error("setting proxy server fail, %s", err.Error())
 		return err
 	}
-
 	err = ProxyEnable()
 	if err != nil {
 		logs.Error("setting proxy enable fail, %s", err.Error())
 		return err
 	}
-
 	return nil
 }
 
@@ -110,18 +115,18 @@ func ButtonWight() []Widget {
 			Text:      LangValue("start"),
 			OnClicked: func() {
 				start.SetEnabled(false)
-
+				ConsoleEnable(false)
 				go func() {
 					err := ServerStart()
 					if err != nil {
 						ErrorBoxAction(mainWindow, err.Error())
 						start.SetEnabled(true)
+						ConsoleEnable(true)
 					} else {
 						err = InternalSettingEnable()
 						if err != nil {
 							ErrorBoxAction(mainWindow, err.Error())
 						}
-
 						StatRunningStatus(true)
 						stop.SetEnabled(true)
 					}
@@ -147,7 +152,9 @@ func ButtonWight() []Widget {
 						}
 						StatRunningStatus(false)
 						start.SetEnabled(true)
+						ConsoleEnable(true)
 					}
+					ConsoleRemoteUpdate()
 				}()
 			},
 		},

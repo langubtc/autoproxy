@@ -98,7 +98,7 @@ func (h *httpsProtocal)Https(address string, r *http.Request) (net.Conn, error) 
 
 	if -1 == strings.Index(string(readbuf[:cnt]),"200") {
 		server.Close()
-		return nil, fmt.Errorf("read from remote proxy fail", string(readbuf[:cnt]))
+		return nil, fmt.Errorf("read from remote proxy fail, rsponse[%s]", string(readbuf[:cnt]))
 	}
 
 	return server, nil

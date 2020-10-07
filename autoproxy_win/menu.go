@@ -22,19 +22,6 @@ func MenuBarInit() []MenuItem {
 					},
 				},
 				Action{
-					Text: LangValue("localproxy"),
-					OnTriggered: func() {
-						LocalServer()
-					},
-				},
-				Action{
-					Text: LangValue("remoteproxy"),
-					OnTriggered: func() {
-						RemoteServer()
-					},
-				},
-
-				Action{
 					Text: LangValue("runlog"),
 					OnTriggered: func() {
 						OpenBrowserWeb(logDirGet())
@@ -49,6 +36,19 @@ func MenuBarInit() []MenuItem {
 				},
 			},
 		},
+		Action{
+			Text:     LangValue("forwarddomain"),
+			OnTriggered: func() {
+				RemodeEdit()
+			},
+		},
+		Action{
+			Text: LangValue("remoteproxy"),
+			OnTriggered: func() {
+				RemoteServer()
+			},
+		},
+		/*
 		Menu{
 			Text: LangValue("authcred"),
 			Items: []MenuItem{
@@ -65,7 +65,7 @@ func MenuBarInit() []MenuItem {
 					},
 				},
 			},
-		},
+		},*/
 		Action{
 			Text: LangValue("miniwin"),
 			OnTriggered: func() {

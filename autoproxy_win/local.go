@@ -6,6 +6,7 @@ import (
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
 	"net"
+	"strings"
 )
 
 
@@ -20,6 +21,10 @@ func ModeOptions() []*Options {
 		{"local",LangValue("localforward")},
 		{"proxy", LangValue("globalforward")},
 	}
+}
+
+func ModeOptionGet() string {
+	return ModeOptions()[ModeOptionsIdx()].Name
 }
 
 func ModeOptionsIdx() int {
@@ -92,7 +97,7 @@ func LocalAddressGet() string {
 		iface = "127.0.0.1"
 	}
 	return fmt.Sprintf("%s://%s:%d",
-		ProtcalOptionsGet(), iface, PortOptionGet())
+		strings.ToLower(ProtcalOptionsGet()), iface, PortOptionGet())
 }
 
 var ifaceList []string
@@ -142,6 +147,7 @@ func LocalIfaceOptionsSet(ifaceName string)  {
 	}
 }
 
+/*
 func AuthSwitchGet() bool {
 	if DataIntValueGet("authswtich") > 0 {
 		return true
@@ -155,12 +161,13 @@ func AuthSwitchSet(flag bool)  {
 	} else {
 		DataIntValueSet("authswtich", 0)
 	}
-}
+}*/
 
 func localWidget() []Widget {
-	var iface, protocal, mode, tls *walk.ComboBox
+	//var protocal, tls *walk.ComboBox
 	var port *walk.NumberEdit
-	var auth *walk.RadioButton
+	var iface, mode *walk.ComboBox
+	//var auth *walk.RadioButton
 
 	return []Widget{
 		Label{
@@ -200,6 +207,7 @@ func localWidget() []Widget {
 				ModeOptionsSet(mode.CurrentIndex())
 			},
 		},
+		/*
 		Label{
 			Text: LangValue("protocal") + ":",
 		},
@@ -234,7 +242,7 @@ func localWidget() []Widget {
 				auth.SetChecked(!AuthSwitchGet())
 				AuthSwitchSet(!AuthSwitchGet())
 			},
-		},
+		},*/
 	}
 }
 
@@ -263,10 +271,10 @@ func LocalServer()  {
 						AssignTo: &acceptPB,
 						Text:     LangValue("accpet"),
 						OnClicked: func() {
-							ConsoleUpdate()
+							/*
 							if AuthSwitchGet() && len(AuthGet()) == 0 {
 								InfoBoxAction(dlg, LangValue("addauthcert"))
-							}
+							}*/
 							dlg.Accept()
 						},
 					},
@@ -274,7 +282,6 @@ func LocalServer()  {
 						AssignTo:  &cancelPB,
 						Text:      LangValue("cancel"),
 						OnClicked: func() {
-							ConsoleUpdate()
 							dlg.Cancel()
 						},
 					},

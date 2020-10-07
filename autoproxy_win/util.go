@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/astaxie/beego/logs"
 	"io/ioutil"
 	"net"
 	"os"
@@ -14,7 +16,7 @@ import (
 )
 
 func VersionGet() string {
-	return "v1.1.0"
+	return "v1.2.0"
 }
 
 func SaveToFile(name string, body []byte) error {
@@ -123,6 +125,62 @@ func StringList(list []string) string {
 		}
 	}
 	return body
+}
+
+type logconfig struct {
+	Filename string  `json:"filename"`
+	Level    int     `json:"level"`
+	MaxLines int     `json:"maxlines"`
+	MaxSize  int     `json:"maxsize"`
+	Daily    bool    `json:"daily"`
+	MaxDays  int     `json:"maxdays"`
+	Color    bool    `json:"color"`
+}
+
+var logCfg = logconfig{Filename: os.Args[0], Level: 7, Daily: true, MaxDays: 30, Color: true}
+
+func LogInit() error {
+	logCfg.Filename = fmt.Sprintf("%s%c%s", logDirGet(), os.PathSeparator, "autoproxy.log")
+	value, err := json.Marshal(&logCfg)
+	if err != nil {
+		return err
+	}
+	err = logs.SetLogger(logs.AdapterFile, string(value))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+
+func StringDiff(oldlist []string, newlist []string) ([]string, []string) {
+	del := make([]string, 0)
+	add := make([]string, 0)
+	for _,v1 := range oldlist {
+		flag := false
+		for _,v2 := range newlist {
+			if v1 == v2 {
+				flag = true
+				break
+			}
+		}
+		if flag == false {
+			del = append(del, v1)
+		}
+	}
+	for _,v1 := range newlist {
+		flag := false
+		for _,v2 := range oldlist {
+			if v1 == v2 {
+				flag = true
+				break
+			}
+		}
+		if flag == false {
+			add = append(add, v1)
+		}
+	}
+	return del, add
 }
 
 

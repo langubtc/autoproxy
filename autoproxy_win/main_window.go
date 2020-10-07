@@ -10,7 +10,7 @@ import (
 var mainWindow *walk.MainWindow
 
 var mainWindowWidth = 300
-var mainWindowHeight = 450
+var mainWindowHeight = 350
 
 func waitWindows()  {
 	for  {
