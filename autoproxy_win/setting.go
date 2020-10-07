@@ -160,7 +160,9 @@ func InternetSettingWidget() []Widget {
 		PushButton{
 			Text:     LangValue("syncaddress"),
 			OnClicked: func() {
-				proxyServer.SetText(ProxyServerGet())
+				server := ProxyServerGet()
+				proxysetting.Server = server
+				proxyServer.SetText(server)
 			},
 		},
 		Label{

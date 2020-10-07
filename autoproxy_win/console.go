@@ -70,7 +70,24 @@ func ConsoleWidget() []Widget {
 		ComboBox{
 			AssignTo:      &consoleRemoteProxy,
 			CurrentIndex:  RemoteIndexGet(),
+			OnBoundsChanged: func() {
+				if len(RemoteList()) == 0 {
+					consoleMode.SetCurrentIndex(0)
+					ModeOptionsSet(0)
+					consoleMode.SetEnabled(false)
+				} else {
+					consoleMode.SetEnabled(true)
+				}
+			},
 			OnCurrentIndexChanged: func() {
+				if len(RemoteList()) == 0 {
+					consoleMode.SetCurrentIndex(0)
+					ModeOptionsSet(0)
+					consoleMode.SetEnabled(false)
+				} else {
+					consoleMode.SetEnabled(true)
+				}
+
 				consoleRemoteProxy.SetEnabled(false)
 				RemoteIndexSet(consoleRemoteProxy.Text())
 				go func() {
@@ -81,7 +98,7 @@ func ConsoleWidget() []Widget {
 					consoleRemoteProxy.SetEnabled(true)
 				}()
 			},
-			Model:         RemoteOptions(),
+			Model: RemoteOptions(),
 		},
 	}
 }

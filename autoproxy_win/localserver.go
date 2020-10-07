@@ -56,6 +56,12 @@ func RemoteForwardUpdate() error {
 }
 
 func remoteUpdate() error {
+	list := RemoteList()
+	if len(list) == 0 {
+		logs.Warn("no remote proxy server.")
+		return nil
+	}
+
 	remote := RemoteList()[RemoteIndexGet()]
 	logs.Info("remote swtich config : %v", remote)
 
@@ -76,6 +82,7 @@ func remoteUpdate() error {
 	}
 
 	logs.Info("remote swtich to %s success", remote.Name )
+
 	if RemoteForward != nil {
 		RemoteForward.Close()
 	}
@@ -83,14 +90,18 @@ func remoteUpdate() error {
 	return nil
 }
 
-func modeUpdate()  {
+func modeUpdate() error {
 	acc := access
 	if acc == nil {
 		logs.Warn("server has been stop, mode update disable")
-		return
+		return nil
 	}
 
 	mode := ModeOptionGet()
+	if mode != "local" && len(RemoteList()) == 0 {
+		return fmt.Errorf("Please add remote proxy config.")
+	}
+
 	logs.Info("mode switch to %s", mode)
 
 	switch mode {
@@ -103,13 +114,14 @@ func modeUpdate()  {
 	}
 
 	logs.Info("server mode switch to %s success", mode)
+	return nil
 }
 
-func ModeUpdate() {
+func ModeUpdate() error {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	modeUpdate()
+	return modeUpdate()
 }
 
 func ServerStart() error {

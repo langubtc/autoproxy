@@ -17,8 +17,8 @@ type Options struct {
 
 func ModeOptions() []*Options {
 	return []*Options{
-		{"auto",LangValue("autoforward")},
 		{"local",LangValue("localforward")},
+		{"auto",LangValue("autoforward")},
 		{"proxy", LangValue("globalforward")},
 	}
 }

@@ -253,6 +253,10 @@ func RemoteServer()  {
 						Editable: true,
 						CurrentIndex:  0,
 						Model:         RemoteOptions(),
+						OnBoundsChanged: func() {
+							curRemoteItem = RemoteFind(remote.Text())
+							updateHandler()
+						},
 						OnCurrentIndexChanged: func() {
 							curRemoteItem = RemoteFind(remote.Text())
 							updateHandler()
@@ -378,6 +382,7 @@ func RemoteServer()  {
 							}
 							RemoteUpdate(curRemoteItem)
 							remoteDlg.Accept()
+							ConsoleRemoteUpdate()
 						},
 					},
 					PushButton{
@@ -387,6 +392,7 @@ func RemoteServer()  {
 							RemoteDelete(curRemoteItem.Name)
 							remote.SetModel(RemoteOptions())
 							remote.SetCurrentIndex(RemoteIndexGet())
+							ConsoleRemoteUpdate()
 						},
 					},
 					PushButton{
