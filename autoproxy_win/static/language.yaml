@@ -138,6 +138,10 @@
   value:
   - 代理地址
   - RemoteAddress
+- key: addsuccess
+  value:
+  - 添加成功
+  - Add Success
 - key: port
   value:
   - 端口

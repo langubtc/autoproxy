@@ -220,15 +220,23 @@ func RemodeEdit()  {
 						AssignTo: &addPB,
 						Text:     LangValue("add"),
 						OnClicked: func() {
-							if addLine.Text() == "" {
+							addDomain := addLine.Text()
+
+							if addDomain == "" {
 								ErrorBoxAction(dlg, LangValue("inputdomain"))
 								return
 							}
-							err := DomainAdd(addLine.Text())
+							err := DomainAdd(addDomain)
 							if err != nil {
 								ErrorBoxAction(dlg, err.Error())
 								return
 							}
+
+							go func() {
+								InfoBoxAction(dlg, addDomain + " " + LangValue("addsuccess") )
+							}()
+
+							addLine.SetText("")
 							findLine.SetText("")
 							DomainTableUpdate("")
 							RouteUpdate()

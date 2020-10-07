@@ -5,6 +5,8 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
+	"sync"
+	"time"
 )
 
 var consoleIface *walk.ComboBox
@@ -109,11 +111,46 @@ func ButtonWight() []Widget {
 	var start *walk.PushButton
 	var stop *walk.PushButton
 
+	mutex := new(sync.Mutex)
+
+	if AutoRunningGet() {
+		go func() {
+			for  {
+				if start != nil && start.Visible() {
+					break
+				}
+				time.Sleep(100 * time.Millisecond)
+			}
+
+			mutex.Lock()
+			start.SetEnabled(false)
+			ConsoleEnable(false)
+			go func() {
+				err := ServerStart()
+				if err != nil {
+					ErrorBoxAction(mainWindow, err.Error())
+					start.SetEnabled(true)
+					ConsoleEnable(true)
+				} else {
+					err = InternalSettingEnable()
+					if err != nil {
+						ErrorBoxAction(mainWindow, err.Error())
+					}
+					StatRunningStatus(true)
+					stop.SetEnabled(true)
+				}
+				mutex.Unlock()
+			}()
+		}()
+	}
+
 	return []Widget{
 		PushButton{
 			AssignTo:  &start,
 			Text:      LangValue("start"),
 			OnClicked: func() {
+				mutex.Lock()
+
 				start.SetEnabled(false)
 				ConsoleEnable(false)
 				go func() {
@@ -130,6 +167,7 @@ func ButtonWight() []Widget {
 						StatRunningStatus(true)
 						stop.SetEnabled(true)
 					}
+					mutex.Unlock()
 				}()
 			},
 		},
@@ -138,6 +176,8 @@ func ButtonWight() []Widget {
 			Enabled:   false,
 			Text:      LangValue("stop"),
 			OnClicked: func() {
+				mutex.Lock()
+
 				stop.SetEnabled(false)
 				go func() {
 					err := ServerShutdown()
@@ -155,6 +195,8 @@ func ButtonWight() []Widget {
 						ConsoleEnable(true)
 					}
 					ConsoleRemoteUpdate()
+
+					mutex.Unlock()
 				}()
 			},
 		},
