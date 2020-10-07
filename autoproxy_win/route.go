@@ -17,7 +17,7 @@ var routeCtrl *RouteCtrl
 func RouteInit() error {
 	routeCtrl = new(RouteCtrl)
 	routeCtrl.cache = make(map[string]string, 2048)
-	routeCtrl.domain = DomainList()
+	routeCtrl.domain = StringClone(DomainList())
 	return nil
 }
 
@@ -63,28 +63,30 @@ func RouteUpdate()  {
 	routeCtrl.Lock()
 	defer routeCtrl.Unlock()
 
-	newList := DomainList()
+	newList := StringClone(DomainList())
 	oldList := routeCtrl.domain
 
 	delList, addList := StringDiff(oldList, newList)
 
+	logs.Info("route update, domain %s delete", delList)
+	logs.Info("route update, domain %s add", addList)
+
 	for _, v := range delList {
-		for key, value := range routeCtrl.cache {
+		for address, value := range routeCtrl.cache {
 			if value == v {
-				delete(routeCtrl.cache, key)
-				logs.Info("domain %s delete, address %s no match", v, key)
-				break
+				delete(routeCtrl.cache, address)
+				logs.Info("domain %s delete, address %s no match", v, address)
 			}
 		}
 	}
 
 	for _, v := range addList {
-		for key, value := range routeCtrl.cache {
+		for address, value := range routeCtrl.cache {
 			if value == "" {
-				if stringCompare(key, v) {
-					routeCtrl.cache[key] = v
-					logs.Info("domain %s add, address %s match", key, v)
-					break
+				domain := AddressToDomain(address)
+				if stringCompare(domain, v) {
+					routeCtrl.cache[address] = v
+					logs.Info("domain %s add, address %s match", address, v)
 				}
 			}
 		}

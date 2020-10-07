@@ -183,6 +183,11 @@ func StringDiff(oldlist []string, newlist []string) ([]string, []string) {
 	return del, add
 }
 
+func StringClone(list []string) []string {
+	output := make([]string, len(list))
+	copy(output, list)
+	return output
+}
 
 func init()  {
 	mathrand.Seed(time.Now().Unix())
