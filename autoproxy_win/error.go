@@ -4,24 +4,11 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
-	"time"
 )
 
-func boxAction(from walk.Form, title string, icon *walk.Icon, message string, timeout time.Duration)  {
+func boxAction(from walk.Form, title string, icon *walk.Icon, message string)  {
 	var dlg *walk.Dialog
 	var cancelPB *walk.PushButton
-
-	if timeout > 0 {
-		go func() {
-			for  {
-				time.Sleep(timeout)
-				if dlg != nil && dlg.Visible() {
-					dlg.Accept()
-					break
-				}
-			}
-		}()
-	}
 
 	_, err := Dialog{
 		AssignTo: &dlg,
@@ -52,13 +39,13 @@ func boxAction(from walk.Form, title string, icon *walk.Icon, message string, ti
 }
 
 func ErrorBoxAction(form walk.Form, message string) {
-	boxAction(form, LangValue("error"), walk.IconError(), message, 0)
+	boxAction(form, LangValue("error"), walk.IconError(), message)
 }
 
 func InfoBoxAction(form walk.Form, message string) {
-	boxAction(form, LangValue("info"), walk.IconInformation(), message, 0)
+	boxAction(form, LangValue("info"), walk.IconInformation(), message)
 }
 
 func ConfirmBoxAction(form walk.Form, message string) {
-	boxAction(form, LangValue("confirm"), walk.IconWarning(), message, 0)
+	boxAction(form, LangValue("confirm"), walk.IconWarning(), message)
 }

@@ -16,7 +16,7 @@ import (
 )
 
 func VersionGet() string {
-	return "v1.2.0"
+	return "v1.2.1 20201007"
 }
 
 func SaveToFile(name string, body []byte) error {

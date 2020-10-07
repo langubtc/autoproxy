@@ -138,21 +138,6 @@ func ProxyServer(server string) error {
 	return k.SetStringValue("ProxyServer", server)
 }
 
-func FollowServerGet() bool {
-	if DataIntValueGet("followlocalserver") > 0 {
-		return true
-	}
-	return false
-}
-
-func FollowServerSet(flag bool)  {
-	if flag {
-		DataIntValueSet("followlocalserver", 1)
-	} else {
-		DataIntValueSet("followlocalserver", 0)
-	}
-}
-
 var proxyServer *walk.LineEdit
 var override *walk.TextEdit
 var usingproxy *walk.RadioButton
@@ -189,19 +174,6 @@ func InternetSettingWidget() []Widget {
 			OnClicked: func() {
 				usingproxy.SetChecked(!proxysetting.Enable)
 				proxysetting.Enable = !proxysetting.Enable
-			},
-		},
-		Label{
-			Text: LangValue("followlocalservice") + ":",
-		},
-		RadioButton{
-			AssignTo: &followlocalservice,
-			OnBoundsChanged: func() {
-				followlocalservice.SetChecked(FollowServerGet())
-			},
-			OnClicked: func() {
-				followlocalservice.SetChecked(!FollowServerGet())
-				FollowServerSet(!FollowServerGet())
 			},
 		},
 	}

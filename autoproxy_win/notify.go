@@ -75,7 +75,7 @@ func NotifyInit()  {
 	showBut.Triggered().Attach(func() {
 		mainWindow.SetVisible(true)
 	})
-
+	
 	if err := notify.ContextMenu().Actions().Add(showBut); err != nil {
 		logs.Error("notify add action fail, %s", err.Error())
 		return

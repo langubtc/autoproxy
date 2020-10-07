@@ -22,6 +22,13 @@ func waitWindows()  {
 	NotifyInit()
 }
 
+func MainWindowsClose()  {
+	if mainWindow != nil {
+		mainWindow.Close()
+		mainWindow = nil
+	}
+}
+
 func statusUpdate()  {
 	StatUpdate(StatGet())
 }
@@ -42,7 +49,7 @@ var protocal  *walk.RadioButton
 func mainWindows() {
 	CapSignal(CloseWindows)
 	cnt, err := MainWindow{
-		Title:   "AutoProxy " + VersionGet(),
+		Title:   "AutoProxy",
 		Icon: ICON_Main,
 		AssignTo: &mainWindow,
 		MinSize: Size{mainWindowWidth, mainWindowHeight},
@@ -75,13 +82,10 @@ func mainWindows() {
 }
 
 func CloseWindows()  {
-	err := ProxyDisable()
-	if err != nil {
-		logs.Error(err.Error())
+	if ServerRunning() {
+		ServerShutdown()
+		ProxyDisable()
 	}
-	if mainWindow != nil {
-		mainWindow.Close()
-		mainWindow = nil
-	}
+	MainWindowsClose()
 	NotifyExit()
 }
