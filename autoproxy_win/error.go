@@ -15,13 +15,12 @@ func boxAction(from walk.Form, title string, icon *walk.Icon, message string)  {
 		Title: title,
 		Icon: icon,
 		CancelButton: &cancelPB,
-		Size: Size{150, 150},
-		MinSize: Size{150, 150},
-		MaxSize: Size{200, 300},
 		Layout:  VBox{},
 		Children: []Widget{
 			Label{
 				Text: message,
+				MinSize: Size{200, 50},
+				MaxSize: Size{200, 0},
 			},
 			PushButton{
 				AssignTo:  &cancelPB,

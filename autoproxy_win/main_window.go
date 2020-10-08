@@ -38,7 +38,7 @@ func init()  {
 		waitWindows()
 		for  {
 			statusUpdate()
-			time.Sleep(2 * time.Second)
+			time.Sleep(time.Second)
 		}
 	}()
 }
@@ -76,6 +76,10 @@ func mainWindows() {
 		logs.Error(err.Error())
 	} else {
 		logs.Info("main windows exit %d", cnt)
+	}
+
+	if err:= recover();err != nil{
+		logs.Error(err)
 	}
 
 	CloseWindows()

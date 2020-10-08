@@ -1,12 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"github.com/astaxie/beego/logs"
-	"github.com/lxn/walk"
-	. "github.com/lxn/walk/declarative"
 	"net"
-	"strings"
 )
 
 
@@ -38,44 +34,6 @@ func ModeOptionsSet(idx int)  {
 	}
 }
 
-func ProtocalOptions() []string {
-	return []string{
-		"HTTP","HTTPS","SOCK5",
-	}
-}
-
-func ProtocalOptionsIdx() int {
-	return int(DataIntValueGet("LocalProtocal"))
-}
-
-func ProtcalOptionsGet() string {
-	return ProtocalOptions()[ProtocalOptionsIdx()]
-}
-
-func ProtcalOptionsSet(idx int)  {
-	err := DataIntValueSet("LocalProtocal", uint32(idx))
-	if err != nil {
-		logs.Error(err.Error())
-	}
-}
-
-func TlsOptions() []string {
-	return []string{
-		"TLS1.1","TLS1.2","TLS1.3",
-	}
-}
-
-func TlsOptionsIdx() int {
-	return int(DataIntValueGet("LocalTls"))
-}
-
-func TlsOptionsSet(idx int)  {
-	err := DataIntValueSet("LocalTls", uint32(idx))
-	if err != nil {
-		logs.Error(err.Error())
-	}
-}
-
 func PortOptionGet() int {
 	value := DataIntValueGet("LocalPort")
 	if value == 0 {
@@ -89,15 +47,6 @@ func PortOptionSet(value int)  {
 	if err != nil {
 		logs.Error(err.Error())
 	}
-}
-
-func LocalAddressGet() string {
-	iface := IfaceOptions()[LocalIfaceOptionsIdx()]
-	if iface == "0.0.0.0" {
-		iface = "127.0.0.1"
-	}
-	return fmt.Sprintf("%s://%s:%d",
-		strings.ToLower(ProtcalOptionsGet()), iface, PortOptionGet())
 }
 
 var ifaceList []string
@@ -147,150 +96,3 @@ func LocalIfaceOptionsSet(ifaceName string)  {
 	}
 }
 
-/*
-func AuthSwitchGet() bool {
-	if DataIntValueGet("authswtich") > 0 {
-		return true
-	}
-	return false
-}
-
-func AuthSwitchSet(flag bool)  {
-	if flag {
-		DataIntValueSet("authswtich", 1)
-	} else {
-		DataIntValueSet("authswtich", 0)
-	}
-}*/
-
-func localWidget() []Widget {
-	//var protocal, tls *walk.ComboBox
-	var port *walk.NumberEdit
-	var iface, mode *walk.ComboBox
-	//var auth *walk.RadioButton
-
-	return []Widget{
-		Label{
-			Text: LangValue("localaddress") + ":",
-		},
-		ComboBox{
-			AssignTo: &iface,
-			CurrentIndex:  LocalIfaceOptionsIdx(),
-			Model:         IfaceOptions(),
-			OnCurrentIndexChanged: func() {
-				LocalIfaceOptionsSet(iface.Text())
-			},
-		},
-		Label{
-			Text: LangValue("port") + ":",
-		},
-		NumberEdit{
-			AssignTo: &port,
-			Value:    float64(PortOptionGet()),
-			ToolTipText: "1~65535",
-			MaxValue: 65535,
-			MinValue: 1,
-			OnValueChanged: func() {
-				PortOptionSet(int(port.Value()))
-			},
-		},
-		Label{
-			Text: LangValue("mode") + ":",
-		},
-		ComboBox{
-			AssignTo: &mode,
-			BindingMember: "Name",
-			DisplayMember: "Detail",
-			CurrentIndex:  ModeOptionsIdx(),
-			Model:         ModeOptions(),
-			OnCurrentIndexChanged: func() {
-				ModeOptionsSet(mode.CurrentIndex())
-			},
-		},
-		/*
-		Label{
-			Text: LangValue("protocal") + ":",
-		},
-		ComboBox{
-			AssignTo: &protocal,
-			CurrentIndex:  ProtocalOptionsIdx(),
-			Model:         ProtocalOptions(),
-			OnCurrentIndexChanged: func() {
-				ProtcalOptionsSet(protocal.CurrentIndex())
-			},
-		},
-		Label{
-			Text: LangValue("tlsversion") + ":",
-		},
-		ComboBox{
-			AssignTo: &tls,
-			CurrentIndex:  TlsOptionsIdx(),
-			Model:         TlsOptions(),
-			OnCurrentIndexChanged: func() {
-				TlsOptionsSet(tls.CurrentIndex())
-			},
-		},
-		Label{
-			Text: LangValue("whetherauth") + ":",
-		},
-		RadioButton{
-			AssignTo: &auth,
-			OnBoundsChanged: func() {
-				auth.SetChecked(AuthSwitchGet())
-			},
-			OnClicked: func() {
-				auth.SetChecked(!AuthSwitchGet())
-				AuthSwitchSet(!AuthSwitchGet())
-			},
-		},*/
-	}
-}
-
-func LocalServer()  {
-	var dlg *walk.Dialog
-	var acceptPB, cancelPB *walk.PushButton
-
-	_, err := Dialog{
-		AssignTo: &dlg,
-		Title: LangValue("localproxy"),
-		Icon: walk.IconShield(),
-		DefaultButton: &acceptPB,
-		CancelButton: &cancelPB,
-		Size: Size{250, 300},
-		MinSize: Size{250, 300},
-		Layout:  VBox{},
-		Children: []Widget{
-			Composite{
-				Layout: Grid{Columns: 2},
-				Children: localWidget(),
-			},
-			Composite{
-				Layout: HBox{},
-				Children: []Widget{
-					PushButton{
-						AssignTo: &acceptPB,
-						Text:     LangValue("accpet"),
-						OnClicked: func() {
-							/*
-							if AuthSwitchGet() && len(AuthGet()) == 0 {
-								InfoBoxAction(dlg, LangValue("addauthcert"))
-							}*/
-							dlg.Accept()
-						},
-					},
-					PushButton{
-						AssignTo:  &cancelPB,
-						Text:      LangValue("cancel"),
-						OnClicked: func() {
-							dlg.Cancel()
-						},
-					},
-				},
-			},
-		},
-	}.Run(mainWindow)
-
-	if err != nil {
-		logs.Error(err.Error())
-	}
-}

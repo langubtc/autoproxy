@@ -148,6 +148,12 @@ func RemoteUpdate(item RemoteItem) {
 	remoteCache = append(remoteCache, item)
 }
 
+func ProtocalOptions() []string {
+	return []string{
+		"HTTP","HTTPS",
+	}
+}
+
 var curRemoteItem RemoteItem
 
 func TestEngin(testhttps string, item *RemoteItem) (time.Duration, error) {

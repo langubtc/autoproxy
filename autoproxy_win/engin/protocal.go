@@ -13,13 +13,19 @@ import (
 var HTTPS_CLIENT_CONNECT_FLAG  = []byte("HTTP/1.1 200 Connection Established\r\n\r\n")
 
 func (acc *HttpAccess)HttpsForward(address string, r *http.Request) (net.Conn, error) {
-	forward := acc.forwardHandler(address, r)
-	return forward.Https(address, r)
+	if acc.forwardHandler != nil {
+		forward := acc.forwardHandler(address, r)
+		return forward.Https(address, r)
+	}
+	return nil, fmt.Errorf("forward handler is null")
 }
 
 func (acc *HttpAccess)HttpForward(address string, r *http.Request) (*http.Response, error) {
-	forward := acc.forwardHandler(address, r)
-	return forward.Http(r)
+	if acc.forwardHandler != nil {
+		forward := acc.forwardHandler(address, r)
+		return forward.Http(r)
+	}
+	return nil, fmt.Errorf("forward handler is null")
 }
 
 func (acc *HttpAccess)HttpsRoundTripper(w http.ResponseWriter, r *http.Request) {
