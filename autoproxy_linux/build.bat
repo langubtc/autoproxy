@@ -26,7 +26,7 @@ exit /b 0
 	go build -ldflags="-w -s" -o output\autoproxy .
 
 	cd output
-    tar -zcf ../%GOOS%_%GOARCH%.tar.gz *
+    tar -zcf ../autoproxy_%GOOS%_%GOARCH%.tar.gz *
 	cd ..
 	
 	rmdir /q/s output
