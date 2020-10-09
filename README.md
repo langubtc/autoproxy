@@ -55,5 +55,50 @@ Of course you can modify and run again
 - Unzip and double-click to run
 - Start successfully, you need to manually add remote proxy service.
 
+#### Home windows
+- Provide basic setting options
+- Forwarding domain name rules
+- Remote service configuration
+- Minimize and hide the window
+- Real-time statistics console
+- Local proxy address and port settings
+
+![](./docs/main.PNG)
+
+#### Add remote service
+
+![](./docs/remoteproxy.PNG)
+
+After the configuration is complete, you can click Test to try to test the connectivity
+
+#### Edit forward domain
+
+Support fuzzy matching rules, For example:
+
+- `*.domain.*` : Middle field matching
+- `*.domain.com` : Suffix match
+- `www.domain.*` : Prefix match
+- `www.domain.com` : Exact match
+
+![](./docs/domain.PNG)
 
 
+#### Multi-language support
+
+![](./docs/language.PNG)
+
+#### Synchronously modify local Internet setting options
+
+![](./docs/setting.go.PNG)
+
+### Everything is ready, return to the home windows and start the service; happy you life;
+
+### If you think this software is good, you can consider asking the author for coffee;
+
+### [paypal.me](https://paypal.me/lixiangyun)
+
+### Alipay
+![](./autoproxy_win/static/sponsor1.jpg)
+
+### Wechat Pay 
+![](./autoproxy_win/static/sponsor2.jpg)
