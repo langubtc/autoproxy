@@ -16,7 +16,7 @@ import (
 )
 
 func VersionGet() string {
-	return "v1.2.2 20201007"
+	return "v1.2.3 20201009"
 }
 
 func SaveToFile(name string, body []byte) error {
@@ -42,9 +42,6 @@ func GetUser(length int) string {
 }
 
 func CapSignal(proc func())  {
-
-
-
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGKILL, syscall.SIGINT, syscall.SIGTERM)
 

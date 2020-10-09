@@ -290,3 +290,15 @@
   value:
   - 域名
   - Domain
+- key: alipay
+  value:
+    - 支付宝
+    - AliPay
+- key: wecartpay
+  value:
+    - 微信支付
+    - WecartPay
+- key: sponsor
+  value:
+    - 请作者喝咖啡
+    - Buy me a coffee

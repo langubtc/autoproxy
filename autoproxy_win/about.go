@@ -17,6 +17,28 @@ func OpenBrowserWeb(url string)  {
 }
 
 var aboutsCtx string
+var image1 walk.Image
+var image2 walk.Image
+
+func LoadImage(name string) walk.Image {
+	body, err := BoxFile().Bytes(name)
+	if err != nil {
+		logs.Error(err.Error())
+		return nil
+	}
+	file := DEFAULT_HOME + "\\" + name
+	err = SaveToFile(file, body)
+	if err != nil {
+		logs.Error(err.Error())
+		return nil
+	}
+	image, err := walk.NewImageFromFile(file)
+	if err != nil {
+		logs.Error(err.Error())
+		return nil
+	}
+	return image
+}
 
 func AboutAction() {
 	var ok    *walk.PushButton
@@ -27,39 +49,79 @@ func AboutAction() {
 		aboutsCtx, err = BoxFile().String("about.txt")
 		if err != nil {
 			logs.Error(err.Error())
-			return
 		}
+	}
+
+	if image1 == nil {
+		image1 = LoadImage("sponsor1.jpg")
+	}
+
+	if image2 == nil {
+		image2 = LoadImage("sponsor2.jpg")
 	}
 
 	_, err = Dialog{
 		AssignTo:      &about,
 		Title:         LangValue("about"),
 		Icon:          walk.IconInformation(),
+		MinSize:       Size{Width: 300, Height: 200},
 		DefaultButton: &ok,
 		Layout:  VBox{},
 		Children: []Widget{
 			TextLabel{
 				Text: aboutsCtx,
-				MinSize: Size{Width: 200, Height: 250},
+				TextAlignment: AlignHCenterVCenter,
 			},
 			Label{
 				Text: LangValue("version") + ": "+ VersionGet(),
 				TextAlignment: AlignCenter,
 			},
+			VSpacer{
+				MinSize: Size{Height: 10},
+			},
+			Label{
+				Text: LangValue("sponsor"),
+				TextAlignment: AlignCenter,
+			},
 			Composite{
-				Layout: VBox{},
+				Layout: HBox{},
 				Children: []Widget{
-					PushButton{
-						Text:      LangValue("officialweb"),
-						OnClicked: func() {
-							OpenBrowserWeb("https://easymesh.info")
-						},
+					HSpacer{
+						MinSize: Size{Width: 10},
 					},
-					PushButton{
-						Text:      LangValue("accpet"),
-						OnClicked: func() { about.Cancel() },
+					ImageView{
+						ToolTipText: LangValue("alipay"),
+						Image:    image1,
+						MaxSize:  Size{80, 80},
+					},
+					HSpacer{
+						MinSize: Size{Width: 10},
+					},
+					ImageView{
+						ToolTipText: LangValue("wecartpay"),
+						Image:    image2,
+						MaxSize:  Size{80, 80},
+					},
+					HSpacer{
+						MinSize: Size{Width: 10},
 					},
 				},
+			},
+			PushButton{
+				Text:      "paypal.me",
+				OnClicked: func() {
+					OpenBrowserWeb("https://paypal.me/lixiangyun")
+				},
+			},
+			PushButton{
+				Text:      LangValue("officialweb"),
+				OnClicked: func() {
+					OpenBrowserWeb("https://github.com/easymesh/autoproxy")
+				},
+			},
+			PushButton{
+				Text:      LangValue("accpet"),
+				OnClicked: func() { about.Cancel() },
 			},
 		},
 	}.Run(mainWindow)

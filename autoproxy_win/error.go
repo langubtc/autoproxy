@@ -4,6 +4,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
+	"time"
 )
 
 func boxAction(from walk.Form, title string, icon *walk.Icon, message string)  {
@@ -38,13 +39,16 @@ func boxAction(from walk.Form, title string, icon *walk.Icon, message string)  {
 }
 
 func ErrorBoxAction(form walk.Form, message string) {
+	time.Sleep(200*time.Millisecond)
 	boxAction(form, LangValue("error"), walk.IconError(), message)
 }
 
 func InfoBoxAction(form walk.Form, message string) {
+	time.Sleep(200*time.Millisecond)
 	boxAction(form, LangValue("info"), walk.IconInformation(), message)
 }
 
 func ConfirmBoxAction(form walk.Form, message string) {
+	time.Sleep(200*time.Millisecond)
 	boxAction(form, LangValue("confirm"), walk.IconWarning(), message)
 }
