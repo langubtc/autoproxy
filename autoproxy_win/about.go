@@ -7,7 +7,6 @@ import (
 	"os/exec"
 )
 
-
 func OpenBrowserWeb(url string)  {
 	cmd := exec.Command("rundll32","url.dll,FileProtocolHandler", url)
 	err := cmd.Run()
@@ -16,7 +15,6 @@ func OpenBrowserWeb(url string)  {
 	}
 }
 
-var aboutsCtx string
 var image1 walk.Image
 var image2 walk.Image
 
@@ -40,17 +38,12 @@ func LoadImage(name string) walk.Image {
 	return image
 }
 
+
+
 func AboutAction() {
 	var ok    *walk.PushButton
 	var about *walk.Dialog
 	var err error
-
-	if aboutsCtx == "" {
-		aboutsCtx, err = BoxFile().String("about.txt")
-		if err != nil {
-			logs.Error(err.Error())
-		}
-	}
 
 	if image1 == nil {
 		image1 = LoadImage("sponsor1.jpg")
@@ -69,8 +62,9 @@ func AboutAction() {
 		Layout:  VBox{},
 		Children: []Widget{
 			TextLabel{
-				Text: aboutsCtx,
-				TextAlignment: AlignHCenterVCenter,
+				Text: LangValue("aboutcontext"),
+				MinSize:       Size{Width: 250, Height: 200},
+				MaxSize:       Size{Width: 290, Height: 400},
 			},
 			Label{
 				Text: LangValue("version") + ": "+ VersionGet(),

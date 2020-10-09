@@ -344,8 +344,8 @@ func RemoteServer()  {
 						AssignTo: &testbut,
 						Text: LangValue("test"),
 						OnClicked: func() {
-							testbut.SetEnabled(false)
 							go func() {
+								testbut.SetEnabled(false)
 								delay, err := TestEngin(testurl.Text(), &curRemoteItem)
 								if err != nil {
 									ErrorBoxAction(remoteDlg, err.Error())
