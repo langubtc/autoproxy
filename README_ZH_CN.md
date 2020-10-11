@@ -1,4 +1,7 @@
-# Auto Proxy
+# Autoproxy
+
+[English](./README.md)
+[中文](./README_ZH_CN.md) 
 
 该项目提供浏览器http proxy代理服务，支持https、http协议代理；可以部署多级代理；支持TLS协议加密；主要使用与内网主机访问外部网站工具；
 
