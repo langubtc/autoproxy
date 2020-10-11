@@ -116,7 +116,7 @@ func DomainTableUpdate(find string)  {
 	}
 	domainTable.items = item
 	domainTable.PublishRowsReset()
-	domainTable.Sort(userList.sortColumn, userList.sortOrder)
+	domainTable.Sort(domainTable.sortColumn, domainTable.sortOrder)
 }
 
 func DomainInit() error {

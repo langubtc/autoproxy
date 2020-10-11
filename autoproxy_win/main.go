@@ -25,11 +25,6 @@ func main()  {
 		logs.Error(err.Error())
 		return
 	}
-	err = AuthInit()
-	if err != nil {
-		logs.Error(err.Error())
-		return
-	}
 	err = IconInit()
 	if err != nil {
 		logs.Error(err.Error())
