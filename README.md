@@ -1,5 +1,6 @@
 # autoproxy
-Open source community version
+
+[中文](./README_ZH_CN.md)[English](./README.md)
 
 The project provides browser http proxy proxy service, supports https and http protocol proxy; can deploy multi-level proxy; supports TLS protocol encryption; mainly uses tools for accessing external websites with intranet hosts;
 
