@@ -112,12 +112,15 @@ func routeMatch(address string) string {
 
 func RouteCheck(address string) bool {
 	routeCtrl.RLock()
-	defer routeCtrl.RUnlock()
-
 	result, flag := routeCtrl.cache[address]
+	routeCtrl.RUnlock()
+
 	if flag == false {
+		routeCtrl.Lock()
 		result = routeMatch(address)
+		routeCtrl.Unlock()
 	}
+
 	if result == "" {
 		return false
 	}
